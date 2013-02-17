@@ -1,11 +1,9 @@
 #pragma once
 
 #include "ofMain.h"
-
+#include "ofxXmlSettings.h"
 #include "ofxOpenCv.h"
 
-#define _USE_LIVE_VIDEO		// uncomment this to use a live camera
-								// otherwise, we'll use a movie file
 
 class testApp : public ofBaseApp{
 
@@ -22,13 +20,16 @@ class testApp : public ofBaseApp{
 		void mouseReleased(int x, int y, int button);
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);		
+		void gotMessage(ofMessage msg);	
+	
+    void savePicture();
+    void updateTemporaryImage();
+    
+    void processCurrentImage();
+        
 
-        #ifdef _USE_LIVE_VIDEO
-		  ofVideoGrabber 		vidGrabber;
-		#else
-		  ofVideoPlayer 		vidPlayer;
-		#endif
+        ofVideoGrabber 		_vidGrabber;
+
 
         ofxCvColorImage			colorImg;
 
@@ -40,7 +41,49 @@ class testApp : public ofBaseApp{
 
 		int 				threshold;
 		bool				bLearnBakground;
-
+    
+    private:
+    
+    //variables for loading/saving images
+    int nLayers;
+    
+     vector<ofImage> layer;  // the layers
+    ofFbo fbo;
+    
+    
+    
+    // variables for image processing
+    int _wCamera, _hCamera;
+        ofxCvColorImage			_camImg; //camera image
+        ofxCvColorImage         _bgImg; //background image
+ 
+    
+    //bg_substraction stuff
+    ofxCvGrayscaleImage 	greenChannel_bg;
+	ofxCvGrayscaleImage 	redChannel_bg;
+	ofxCvGrayscaleImage 	blueChannel_bg;
+    
+    ofxCvGrayscaleImage 	greenChannel;
+	ofxCvGrayscaleImage 	redChannel;
+	ofxCvGrayscaleImage 	blueChannel;
+    ofxCvGrayscaleImage 	BinImage;
+    
+    unsigned char			*pixels_r,*pixels_g,*pixels_b,*pixels_r_bg,*pixels_g_bg,*pixels_b_bg; //temporary pointers to colorarrays
+    double					a,b,d,v1,v2,v3; //used für color difference methods
+    bool    useFullCollorDifference;
+    int colorDifferenceMethod;
+    unsigned char *			diffWorkImage;
+	unsigned char *			diffWorkImage_skin;
+    
+    int c_threshold;
+    
+    
+    ofImage tempPic;
+   
+    
+    //textinterface
+    bool showGui;
+    
 
 };
 

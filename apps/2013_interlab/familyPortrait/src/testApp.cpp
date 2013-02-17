@@ -2,96 +2,227 @@
 
 //--------------------------------------------------------------
 void testApp::setup(){
+    _wCamera = 640;
+    _hCamera = 480;
 
-	#ifdef _USE_LIVE_VIDEO
-        vidGrabber.setVerbose(true);
-        vidGrabber.initGrabber(320,240);
-	#else
-        vidPlayer.loadMovie("fingers.mov");
-        vidPlayer.play();
-	#endif
+        _vidGrabber.setVerbose(true);
+        _vidGrabber.initGrabber(_wCamera,_hCamera);
 
-    colorImg.allocate(320,240);
-	grayImage.allocate(320,240);
-	grayBg.allocate(320,240);
-	grayDiff.allocate(320,240);
 
 	bLearnBakground = true;
-	threshold = 80;
+	threshold = 20;
+    c_threshold = 1;
+    
+    //allocate the pictures
+   
+    _camImg.allocate(_wCamera, _hCamera);
+    _bgImg.allocate(_wCamera, _hCamera);
+    
+    BinImage.allocate(_wCamera,_hCamera);
+    greenChannel.allocate(_wCamera,_hCamera);
+    redChannel.allocate(_wCamera,_hCamera);
+    blueChannel.allocate(_wCamera,_hCamera);
+    greenChannel_bg.allocate(_wCamera,_hCamera);
+    redChannel_bg.allocate(_wCamera,_hCamera);
+    blueChannel_bg.allocate(_wCamera,_hCamera);
+    diffWorkImage=new unsigned char[_wCamera*_hCamera];
+    
+    fbo.allocate(_wCamera, _hCamera, GL_RGBA);
+    tempPic.allocate(_wCamera, _hCamera, OF_IMAGE_COLOR_ALPHA);
+    
+    useFullCollorDifference = true;
+    colorDifferenceMethod = 0;
+    
+    
+    //load the images
+    ofDirectory dir;
+    nLayers = dir.listDir("images/");
+    for (int i=0; i<nLayers; ++i) {
+        ofImage img;
+        img.loadImage(dir.getPath(i));
+        layer.push_back(img);
+    }
+    
+    showGui = false;
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
 	ofBackground(100,100,100);
 
-    bool bNewFrame = false;
-
-	#ifdef _USE_LIVE_VIDEO
-       vidGrabber.update();
-	   bNewFrame = vidGrabber.isFrameNew();
-    #else
-        vidPlayer.update();
-        bNewFrame = vidPlayer.isFrameNew();
-	#endif
-
-	if (bNewFrame){
-
-		#ifdef _USE_LIVE_VIDEO
-            colorImg.setFromPixels(vidGrabber.getPixels(), 320,240);
-	    #else
-            colorImg.setFromPixels(vidPlayer.getPixels(), 320,240);
-        #endif
-
-        grayImage = colorImg;
-		if (bLearnBakground == true){
-			grayBg = grayImage;		// the = sign copys the pixels from grayImage into grayBg (operator overloading)
-			bLearnBakground = false;
-		}
-
-		// take the abs value of the difference between background and incoming and then threshold:
-		grayDiff.absDiff(grayBg, grayImage);
-		grayDiff.threshold(threshold);
-
-		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-		// also, find holes is set to true so we will get interior contours as well....
-		contourFinder.findContours(grayDiff, 20, (340*240)/3, 10, true);	// find holes
-	}
-
+    processCurrentImage();
+    
+    //update images;
+    ofDirectory dir;
+    int nLayersNew = dir.listDir("images/");
+    if (nLayers < nLayersNew) {
+        for (int i=nLayers; i<nLayersNew; ++i) {
+            ofImage img;
+            img.loadImage(dir.getPath(i));
+            layer.push_back(img);
+        }
+    }
+    
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
-
-	// draw the incoming, the grayscale, the bg and the thresholded difference
-	ofSetHexColor(0xffffff);
-	colorImg.draw(20,20);
-	grayImage.draw(360,20);
-	grayBg.draw(20,280);
-	grayDiff.draw(360,280);
-
-	// then draw the contours:
-
-	ofFill();
-	ofSetHexColor(0x333333);
-	ofRect(360,540,320,240);
-	ofSetHexColor(0xffffff);
-
-	// we could draw the whole contour finder
-	//contourFinder.draw(360,540);
-
-	// or, instead we can draw each blob individually,
-	// this is how to get access to them:
-    for (int i = 0; i < contourFinder.nBlobs; i++){
-        contourFinder.blobs[i].draw(360,540);
+    
+    ofSetHexColor(0xffffff);
+    ofEnableAlphaBlending();
+	for (int i=0; i<layer.size(); ++i) {
+        layer[i].draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
     }
+    tempPic.draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
+   
+    if (showGui)
+    {
+        string t = "threshold: ";
+        t+= ofToString(threshold);
+        ofSetColor(255, 255, 255);
+        ofDrawBitmapString(t, 20, 500);
+    }
+}
 
-	// finally, a report:
+void testApp::savePicture(){
+    
+    updateTemporaryImage();
+    
+    
+    
+    //save picture
+    ofxXmlSettings XML;
+    if( XML.loadFile("mySettings.xml") ){
+		cout << "mySettings.xml loaded!" << endl;
+	}else{
+		cout << "unable to load mySettings.xml check data/ folder" << endl;
+	}
+    
+	string city = XML.getValue("SETTINGS:CITY", "");
+    int timeZone = XML.getValue("SETTINGS:TIMEZONE", 0);
+    
+	
+    string timestamp = ofGetTimestampString();
+    string t2 = timestamp.substr(11,2);
+    int ttemp = ofToInt(t2);
+    ttemp+=timeZone;
+    t2 = ofToString(ttemp);
+    timestamp[11] = t2[0];
+    timestamp[12] = t2[1];
+    
+    string file = "images/"; 
+    file += timestamp;
+    file += "_";
+    file += city;
+    file += ".png";
+    
+    
+    
+    tempPic.saveImage(file);
 
-	ofSetHexColor(0xffffff);
-	char reportStr[1024];
-	sprintf(reportStr, "bg subtraction and blob detection\npress ' ' to capture bg\nthreshold %i (press: +/-)\nnum blobs found %i, fps: %f", threshold, contourFinder.nBlobs, ofGetFrameRate());
-	ofDrawBitmapString(reportStr, 20, 600);
+    
+}
 
+void testApp::updateTemporaryImage(){
+    
+    unsigned char* pix = tempPic.getPixels();
+    unsigned char* pixCam = _camImg.getPixels();
+    unsigned char* mask = BinImage.getPixels();
+    
+    for (int i=0; i<_wCamera*_hCamera; ++i) {
+        pix[i*4] =  pixCam[i*3];
+        pix[i*4+1] =  pixCam[i*3+1];
+        pix[i*4+2] =  pixCam[i*3+2];
+        pix[i*4+3] = mask[i];
+    }
+    tempPic.setFromPixels(pix, _wCamera, _hCamera, OF_IMAGE_COLOR_ALPHA);
+}
+
+void testApp::processCurrentImage(){
+    bool bNewFrame = false;
+    
+    _vidGrabber.update();
+    bNewFrame = _vidGrabber.isFrameNew();
+    
+	if (bNewFrame){
+        _camImg.setFromPixels(_vidGrabber.getPixels(),_wCamera,_hCamera);
+        updateTemporaryImage();
+        
+		if (bLearnBakground == true){
+			_bgImg = _camImg;
+            _bgImg.convertToGrayscalePlanarImages(redChannel_bg,greenChannel_bg,blueChannel_bg);
+			bLearnBakground = false;
+		}
+        
+        
+        // mask picture
+        //generate binary picture from highest contrast of each color chanel
+        if(useFullCollorDifference)
+        {
+            //Get Color Chanels
+            int totalPixels = _wCamera*_hCamera;
+            
+            _camImg.convertToGrayscalePlanarImages(redChannel,greenChannel,blueChannel);
+            
+            
+            pixels_r = redChannel.getPixels();
+            pixels_g = greenChannel.getPixels();
+            pixels_b = blueChannel.getPixels();
+            
+            pixels_r_bg = redChannel_bg.getPixels();
+            pixels_g_bg = greenChannel_bg.getPixels();
+            pixels_b_bg = blueChannel_bg.getPixels();
+            
+            /* Generate Difference Picture from Distance in Color Space and Distance in lightness*/
+            
+            for (int i = 0; i < totalPixels; i++)
+            {
+                int dr, db, dg;
+                dr = pixels_r[i] - pixels_r_bg[i];
+                if (dr<0) dr*=-1;
+                dg = pixels_g[i] - pixels_g_bg[i];
+                if (dg<0) dg*=-1;
+                db = pixels_b[i] - pixels_b_bg[i];
+                if (db<0) db*=-1;
+                
+                if (dr > threshold && dg > threshold && db > threshold) {
+                    diffWorkImage[i] = 255;
+                }
+                else
+                    diffWorkImage[i] = 0;
+            }
+            
+            
+            /*
+             for (int i = 0; i < totalPixels; i++)
+             {
+             a=(pixels_r[i]*pixels_r_bg[i])+(pixels_g[i]*pixels_g_bg[i])+(pixels_b[i]*pixels_b_bg[i]);
+             b=((pixels_r_bg[i]*pixels_r_bg[i])+(pixels_g_bg[i]*pixels_g_bg[i])+(pixels_b_bg[i]*pixels_b_bg[i]));
+             d=a/b;
+             v1=(pixels_r[i]-d*pixels_r_bg[i]);
+             v1=v1*v1;
+             v2=(pixels_g[i]-d*pixels_g_bg[i]);
+             v2=v2*v2;
+             v3=(pixels_b[i]-d*pixels_b_bg[i]);
+             v3=v3*v3;
+             
+             diffWorkImage[i]=0;
+             
+             //treshold for ligthness and color
+             if((abs((d)-1))>(double)threshold/100&&sqrt(v1+v2+v3)>c_threshold)
+             {
+             diffWorkImage[i]=255;
+             }
+             }*/
+            BinImage=diffWorkImage;
+            BinImage.erode();
+            BinImage.blurGaussian();
+            BinImage.dilate_3x3();
+            
+            
+        }
+        
+	}
 }
 
 //--------------------------------------------------------------
@@ -109,6 +240,15 @@ void testApp::keyPressed(int key){
 			threshold --;
 			if (threshold < 0) threshold = 0;
 			break;
+        case 'p':
+            savePicture();
+            break;
+        case 'g':
+            showGui = !showGui;
+            break;
+        case 'f':
+            ofToggleFullscreen();
+            break;
 	}
 }
 
