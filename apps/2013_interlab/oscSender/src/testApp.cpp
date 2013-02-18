@@ -57,13 +57,20 @@ void testApp::draw(){
 //--------------------------------------------------------------
 void testApp::onNewMessage(string & message)
 {
+    
+    string mes = "";
+    for(int i=0; i<message.length(); ++i){
+        mes+=message[i];
+    }
    
 	for (int i=0; i<messageFormats.size(); ++i) {
         
         
-        cout << message << endl;
         
-        vector<string> messageParts = ofSplitString(message, "|");
+        
+        cout << mes << endl;
+        
+        vector<string> messageParts = ofSplitString(mes, "|");
         
         if(messageParts.size()>1 && messageParts[0] == messageFormats[i].addressName){
             
