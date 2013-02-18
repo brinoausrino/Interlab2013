@@ -4,6 +4,8 @@
 #include "ofxXmlSettings.h"
 #include "ofxOpenCv.h"
 
+enum IMAGE_MODE { COLOR, BLACKWHITE, SEPIA };
+
 
 class testApp : public ofBaseApp{
     
@@ -27,30 +29,33 @@ public:
     void processCurrentImage();
     
     
-    ofVideoGrabber 		_vidGrabber;
+    ofVideoGrabber          _vidGrabber;
     
     
-    int 				threshold;
-    bool				bLearnBakground;
+    int                     threshold;
+    bool                    bLearnBakground;
     
 private:
     
     //variables for loading/saving images
-    int nLayers;
-    int maxShownLayers;
-    vector<ofImage> layer;  // the layers
-    ofFbo fbo;
-    string  destinationFolder;
-    ofImage tempPic;
-    string city;
-    int timeZone;
+    int                     nLayers;
+    int                     maxShownLayers;
+    vector<ofImage>         layer;  // the layers
+    ofFbo                   fbo;
+    ofxCvGrayscaleImage     toningPicture;
+    ofxCvColorImage         toningPictureColor;
+    ofPixels                toningPicturePixels;
+    string                  destinationFolder;
+    ofImage                 tempPic;
+    string                  city;
+    int                     timeZone;
+    IMAGE_MODE              imageMode;
     
     
     // variables for image processing
-    int _wCamera, _hCamera;
+    int                     _wCamera, _hCamera;
     ofxCvColorImage			_camImg; //camera image
     ofxCvColorImage         _bgImg; //background image
-    
     
     //bg_substraction stuff
     ofxCvGrayscaleImage 	greenChannel_bg;
@@ -63,15 +68,15 @@ private:
     ofxCvGrayscaleImage 	BinImage;
     //temporary pointers to colorarrays
     unsigned char			*pixels_r,*pixels_g,*pixels_b,*pixels_r_bg,*pixels_g_bg,*pixels_b_bg; 
-    bool    useFullCollorDifference;
-    int colorDifferenceMethod;
+    bool                    useFullCollorDifference;
+    int                     colorDifferenceMethod;
     unsigned char *			diffWorkImage;
 	unsigned char *			diffWorkImage_skin;
     
     
     
     //textinterface
-    bool showGui;
+    bool                    showGui;
     
     
 };

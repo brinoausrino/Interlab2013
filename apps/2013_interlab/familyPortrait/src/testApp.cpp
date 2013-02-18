@@ -2,8 +2,34 @@
 
 //--------------------------------------------------------------
 void testApp::setup(){
-    _wCamera = 640;
-    _hCamera = 480;
+    ofxXmlSettings XML;
+    if( XML.loadFile("mySettings.xml") ){
+		cout << "mySettings.xml loaded!" << endl;
+	}else{
+		cout << "unable to load mySettings.xml check data/ folder" << endl;
+	}
+    
+    destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "images/");
+    threshold = XML.getValue("IMAGE_PROCESSING:THRESHOLD",80);
+    maxShownLayers = XML.getValue("IMAGE_PROCESSING:MAX_SHOWN_PICTURES",10);
+    city = XML.getValue("FILES:CITY", "");
+    timeZone = XML.getValue("FILES:TIMEZONE", 0);
+    _wCamera = XML.getValue("IMAGE_PROCESSING:WIDTH",10);
+    _hCamera = XML.getValue("IMAGE_PROCESSING:HEIGTH",10);
+    
+    string imgMode = XML.getValue("IMAGE_PROCESSING:IMAGE_MODE","COLOR");
+    if (imgMode == "COLOR") {
+        imageMode = COLOR;
+    }
+    else if (imgMode == "BLACKWHITE"){
+        imgMode = BLACKWHITE;
+    }
+    else{
+        imgMode = SEPIA;
+    }
+    
+    
+    ofSetWindowShape(_wCamera, _hCamera);
     
     _vidGrabber.setVerbose(true);
     _vidGrabber.initGrabber(_wCamera,_hCamera);
@@ -25,12 +51,21 @@ void testApp::setup(){
     redChannel_bg.allocate(_wCamera,_hCamera);
     blueChannel_bg.allocate(_wCamera,_hCamera);
     diffWorkImage=new unsigned char[_wCamera*_hCamera];
+    toningPicture.allocate(_wCamera, _hCamera);
+    toningPictureColor.allocate(_wCamera, _hCamera);
     
-    fbo.allocate(_wCamera, _hCamera, GL_RGBA);
+    ofFbo::Settings settings;
+    settings.width = _wCamera;
+    settings.height = _hCamera;
+    settings.internalformat = GL_RGB;
+    settings.numSamples = 0;
+    settings.useDepth = false;
+    settings.useStencil = false;
+    fbo.allocate(settings);
     tempPic.allocate(_wCamera, _hCamera, OF_IMAGE_COLOR_ALPHA);
     
-    colorDifferenceMethod = 0;
-    
+    //toningPicturePixels.allocate(_wCamera, _hCamera);
+
     
     //load the images
     ofDirectory dir;
@@ -44,18 +79,7 @@ void testApp::setup(){
     showGui = false;
     
     
-    ofxXmlSettings XML;
-    if( XML.loadFile("mySettings.xml") ){
-		cout << "mySettings.xml loaded!" << endl;
-	}else{
-		cout << "unable to load mySettings.xml check data/ folder" << endl;
-	}
-    
-    destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "images/");
-    threshold = XML.getValue("IMAGE_PROCESSING:THRESHOLD",80);
-    maxShownLayers = XML.getValue("IMAGE_PROCESSING:MAX_SHOWN_PICTURES",10);
-    city = XML.getValue("FILES:CITY", "");
-    timeZone = XML.getValue("FILES:TIMEZONE", 0);
+   
 }
 
 //--------------------------------------------------------------
@@ -82,7 +106,9 @@ void testApp::update(){
 void testApp::draw(){
     
     //draw images
-    
+    if (imageMode != COLOR) {
+        fbo.begin();
+    }
     //draw backgound
     ofSetHexColor(0xffffff);
     _bgImg.draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
@@ -98,6 +124,16 @@ void testApp::draw(){
     
     //draw temporary figure
     tempPic.draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
+    if (imageMode != COLOR) {
+        fbo.end();
+        fbo.getTextureReference().readToPixels(toningPicturePixels);
+        toningPictureColor.setFromPixels(toningPicturePixels);
+        toningPicture = toningPictureColor;
+        if (imageMode == SEPIA) {
+            ofSetColor(162, 138, 101);
+        }
+        toningPicture.draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
+    }
     
     
     //draw gui
@@ -109,6 +145,24 @@ void testApp::draw(){
         t+= "maxShownLayers (n/m): ";
         t+= ofToString(maxShownLayers);
         t+=("\n");
+        t+= "imageMode (i): ";
+        switch (imageMode) {
+            case COLOR:
+                t+="COLOR";
+                break;
+            case BLACKWHITE:
+                t+="BLACKWHITE";
+                break;    
+            case SEPIA:
+                t+="SEPIA";
+                break; 
+        }
+        t+=("\n");
+        t+= "ImageResolution: ";
+        t+= ofToString(_wCamera);
+        t+= " * ";
+        t+=  ofToString(_hCamera);
+        t+=("\n");
         t+= "image directory: ";
         t+= destinationFolder;
         t+=("\n");
@@ -118,9 +172,9 @@ void testApp::draw(){
         t+= "timezone: ";
         t+= ofToString(timeZone);
         ofSetColor(0, 0, 0);
-        ofRect(0, ofGetWindowHeight() - 85, 700, 85);
+        ofRect(0, ofGetWindowHeight() - 105, 700, 105);
         ofSetColor(255, 255, 255);
-        ofDrawBitmapString(t, 20, ofGetWindowHeight() - 70);
+        ofDrawBitmapString(t, 20, ofGetWindowHeight() - 90);
     }
 }
 
@@ -263,6 +317,19 @@ void testApp::keyPressed(int key){
             break;
         case 'f':
             ofToggleFullscreen();
+            break;
+        case 'i':
+            switch (imageMode) {
+                case COLOR:
+                    imageMode = BLACKWHITE;
+                    break;
+                case BLACKWHITE:
+                    imageMode = SEPIA;
+                    break;    
+                case SEPIA:
+                    imageMode = COLOR;
+                    break; 
+            }
             break;
 	}
 }
