@@ -7,6 +7,8 @@
 #define HOST "localhost"
 #define PORT 12345
 
+
+
 //--------------------------------------------------------
 class testApp : public ofBaseApp {
 
@@ -40,8 +42,12 @@ class testApp : public ofBaseApp {
 
 		vector<MessageFormat> messageFormats;
 
-		static const int TypeString = 0;
-		static const int TypeInt = 1;
-		static const int TypeFloat = 2;
+		//static const int TypeString = 0;
+		//static const int TypeInt = 1;
+		//static const int TypeFloat = 2;
+    
+        enum types1 {TYPESTRING = 0, TYPEINT = 1, TYPEFLOAT = 2};
+    
+        
 };
 
