@@ -23,3 +23,6 @@ apps/myApps
 
 apps/2013_interlab/emotiontracker_osc/bin/opencvExample.app
 apps/2013_interlab/familyPortrait/bin/opencvExample.app
+
+apps/2013_interlab/oscSender/bin/oscSenderExampleDebug.app
+apps/2013_interlab/oscSender/build

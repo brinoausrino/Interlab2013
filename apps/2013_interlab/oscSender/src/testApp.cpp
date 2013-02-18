@@ -10,26 +10,32 @@ void testApp::setup(){
 
 	//serial reader
 	//serial.setup("COM8", 9600);
-    //serial.startContinuesRead();
-    //ofAddListener(serial.NEW_MESSAGE,this,&testApp::onNewMessage);
-	//serial.sendRequest();
+    serial.setup("/dev/tty.usbserial-A600K2BH", 9600);
+    serial.startContinuesRead();
+    ofAddListener(serial.NEW_MESSAGE,this,&testApp::onNewMessage);
+	serial.sendRequest();
 
 	
 	vector<int> argTypes1;
-	argTypes1.push_back(testApp::TypeInt);
+	argTypes1.push_back(TYPEINT);
 	struct MessageFormat mf1 = {"/test/eins", argTypes1};
 	messageFormats.push_back(mf1);
 
 	vector<int> argTypes2;
-	argTypes2.push_back(testApp::TypeString);
+	argTypes2.push_back(TYPESTRING);
 	struct MessageFormat mf2 = {"/test/zwei", argTypes2};
 	messageFormats.push_back(mf2);
 
 	vector<int> argTypes3;
-	argTypes3.push_back(testApp::TypeInt);
-	argTypes3.push_back(testApp::TypeString);
+	argTypes3.push_back(TYPEINT);
+	argTypes3.push_back(TYPESTRING);
 	struct MessageFormat mf3 = {"/test/drei", argTypes3};
 	messageFormats.push_back(mf3);
+    
+    vector<int> argTypes4;
+	argTypes4.push_back(TYPEINT);
+	struct MessageFormat mf4 = {"z", argTypes4};
+	messageFormats.push_back(mf4);
 }
 
 //--------------------------------------------------------------
@@ -53,15 +59,28 @@ void testApp::onNewMessage(string & message)
 {
    
 	for (int i=0; i<messageFormats.size(); ++i) {
-		unsigned found = message.find(messageFormats[i].addressName);
-		if (found!=std::string::npos){
-
+        
+        
+        cout << message << endl;
+        
+        vector<string> messageParts = ofSplitString(message, "|");
+        
+        if(messageParts.size()>1 && messageParts[0] == messageFormats[i].addressName){
+            
+            cout << "ok" << endl;
+        
+		//unsigned found = message.find(messageFormats[i].addressName);
+		//if (found!=std::string::npos){
+            
+            
 			//get address name
 			string addressName = messageFormats[i].addressName;
+            messageParts.erase(messageParts.begin());
+            
 			//split off address name
-			message.erase(0, addressName.length());
+			//message.erase(0, addressName.length());
 			//get arguments
-			vector<string> args = ofSplitString(message, "|");
+			//vector<string> args = ofSplitString(message, "|");
 
 			ofxOscMessage m;
 			m.setAddress(addressName);
@@ -72,14 +91,15 @@ void testApp::onNewMessage(string & message)
 
 				int type = messageFormats[i].argTypes[j];
 				switch(type){
-					case testApp::TypeString:
-						m.addStringArg(ofToString(args[j]));
-					case testApp::TypeInt:
-						m.addIntArg(ofToInt(args[j]));
-					case testApp::TypeFloat:
-						m.addFloatArg(ofToFloat(args[j]));
+					case TYPESTRING:
+						m.addStringArg(ofToString(messageParts[j]));
+					case TYPEINT:
+						m.addIntArg(ofToInt(messageParts[j]));
+					case TYPEFLOAT:
+						m.addFloatArg(ofToFloat(messageParts[j]));
 				}
 			}
+            
 			sender.sendMessage(m);
 		}
     }
@@ -97,15 +117,15 @@ void testApp::keyPressed(int key){
 		sender.sendMessage(m);
 	}
 	if(key == 's' || key == 'S'){
-		string message = "/test/eins9";
+		string message = "/test/eins|9";
 		onNewMessage(message);	
 	}
 	if(key == 'd' || key == 'D'){
-		string message = "/test/zweihallo";
+		string message = "/test/zwei|hallo";
 		onNewMessage(message);	
 	}
 	if(key == 'f' || key == 'F'){
-		string message = "/test/drei12|zwölf";
+		string message = "/test/drei|12|zwoelf";
 		onNewMessage(message);	
 	}
 }
