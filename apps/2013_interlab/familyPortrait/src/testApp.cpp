@@ -4,17 +4,16 @@
 void testApp::setup(){
     _wCamera = 640;
     _hCamera = 480;
-
-        _vidGrabber.setVerbose(true);
-        _vidGrabber.initGrabber(_wCamera,_hCamera);
-
-
+    
+    _vidGrabber.setVerbose(true);
+    _vidGrabber.initGrabber(_wCamera,_hCamera);
+    
+    
 	bLearnBakground = true;
-	threshold = 20;
-    c_threshold = 1;
+	
     
     //allocate the pictures
-   
+    
     _camImg.allocate(_wCamera, _hCamera);
     _bgImg.allocate(_wCamera, _hCamera);
     
@@ -30,7 +29,6 @@ void testApp::setup(){
     fbo.allocate(_wCamera, _hCamera, GL_RGBA);
     tempPic.allocate(_wCamera, _hCamera, OF_IMAGE_COLOR_ALPHA);
     
-    useFullCollorDifference = true;
     colorDifferenceMethod = 0;
     
     
@@ -44,22 +42,37 @@ void testApp::setup(){
     }
     
     showGui = false;
+    
+    
+    ofxXmlSettings XML;
+    if( XML.loadFile("mySettings.xml") ){
+		cout << "mySettings.xml loaded!" << endl;
+	}else{
+		cout << "unable to load mySettings.xml check data/ folder" << endl;
+	}
+    
+    destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "images/");
+    threshold = XML.getValue("IMAGE_PROCESSING:THRESHOLD",80);
+    maxShownLayers = XML.getValue("IMAGE_PROCESSING:MAX_SHOWN_PICTURES",10);
+    city = XML.getValue("FILES:CITY", "");
+    timeZone = XML.getValue("FILES:TIMEZONE", 0);
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
 	ofBackground(100,100,100);
-
+    
     processCurrentImage();
     
     //update images;
     ofDirectory dir;
-    int nLayersNew = dir.listDir("images/");
+    int nLayersNew = dir.listDir(destinationFolder);
     if (nLayers < nLayersNew) {
         for (int i=nLayers; i<nLayersNew; ++i) {
             ofImage img;
             img.loadImage(dir.getPath(i));
             layer.push_back(img);
+            nLayers = nLayersNew;
         }
     }
     
@@ -68,28 +81,51 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
     
+    //draw images
+    
+    //draw backgound
     ofSetHexColor(0xffffff);
+    _bgImg.draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
     ofEnableAlphaBlending();
-	for (int i=0; i<layer.size(); ++i) {
+    
+    //draw layers
+    int start = layer.size()-maxShownLayers;
+    if (start<0) start = 0;
+    
+	for (int i=start; i<layer.size(); ++i) {
         layer[i].draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
     }
+    
+    //draw temporary figure
     tempPic.draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
-   
+    
+    
+    //draw gui
     if (showGui)
     {
-        string t = "threshold: ";
+        string t = "threshold (+/-): ";
         t+= ofToString(threshold);
+        t+=("\n");
+        t+= "maxShownLayers (n/m): ";
+        t+= ofToString(maxShownLayers);
+        t+=("\n");
+        t+= "image directory: ";
+        t+= destinationFolder;
+        t+=("\n");
+        t+= "city: ";
+        t+= city;
+        t+=("\n");
+        t+= "timezone: ";
+        t+= ofToString(timeZone);
+        ofSetColor(0, 0, 0);
+        ofRect(0, ofGetWindowHeight() - 85, 700, 85);
         ofSetColor(255, 255, 255);
-        ofDrawBitmapString(t, 20, 500);
+        ofDrawBitmapString(t, 20, ofGetWindowHeight() - 70);
     }
 }
 
 void testApp::savePicture(){
-    
-    updateTemporaryImage();
-    
-    
-    
+     
     //save picture
     ofxXmlSettings XML;
     if( XML.loadFile("mySettings.xml") ){
@@ -98,8 +134,7 @@ void testApp::savePicture(){
 		cout << "unable to load mySettings.xml check data/ folder" << endl;
 	}
     
-	string city = XML.getValue("SETTINGS:CITY", "");
-    int timeZone = XML.getValue("SETTINGS:TIMEZONE", 0);
+	
     
 	
     string timestamp = ofGetTimestampString();
@@ -110,17 +145,14 @@ void testApp::savePicture(){
     timestamp[11] = t2[0];
     timestamp[12] = t2[1];
     
-    string file = "images/"; 
+    string file = destinationFolder; 
     file += timestamp;
     file += "_";
     file += city;
     file += ".png";
     
     
-    
     tempPic.saveImage(file);
-
-    
 }
 
 void testApp::updateTemporaryImage(){
@@ -139,12 +171,14 @@ void testApp::updateTemporaryImage(){
 }
 
 void testApp::processCurrentImage(){
+    //update if camera has new frame
     bool bNewFrame = false;
-    
     _vidGrabber.update();
     bNewFrame = _vidGrabber.isFrameNew();
     
 	if (bNewFrame){
+        
+        //update frame
         _camImg.setFromPixels(_vidGrabber.getPixels(),_wCamera,_hCamera);
         updateTemporaryImage();
         
@@ -157,77 +191,51 @@ void testApp::processCurrentImage(){
         
         // mask picture
         //generate binary picture from highest contrast of each color chanel
-        if(useFullCollorDifference)
+        //Get Color Chanels
+        int totalPixels = _wCamera*_hCamera;
+        
+        _camImg.convertToGrayscalePlanarImages(redChannel,greenChannel,blueChannel);
+        
+        
+        pixels_r = redChannel.getPixels();
+        pixels_g = greenChannel.getPixels();
+        pixels_b = blueChannel.getPixels();
+        
+        pixels_r_bg = redChannel_bg.getPixels();
+        pixels_g_bg = greenChannel_bg.getPixels();
+        pixels_b_bg = blueChannel_bg.getPixels();
+        
+        /* Generate Difference Picture from Distance in Color Space and Distance in lightness*/
+        
+        for (int i = 0; i < totalPixels; i++)
         {
-            //Get Color Chanels
-            int totalPixels = _wCamera*_hCamera;
+            int dr, db, dg;
+            dr = pixels_r[i] - pixels_r_bg[i];
+            if (dr<0) dr*=-1;
+            dg = pixels_g[i] - pixels_g_bg[i];
+            if (dg<0) dg*=-1;
+            db = pixels_b[i] - pixels_b_bg[i];
+            if (db<0) db*=-1;
             
-            _camImg.convertToGrayscalePlanarImages(redChannel,greenChannel,blueChannel);
-            
-            
-            pixels_r = redChannel.getPixels();
-            pixels_g = greenChannel.getPixels();
-            pixels_b = blueChannel.getPixels();
-            
-            pixels_r_bg = redChannel_bg.getPixels();
-            pixels_g_bg = greenChannel_bg.getPixels();
-            pixels_b_bg = blueChannel_bg.getPixels();
-            
-            /* Generate Difference Picture from Distance in Color Space and Distance in lightness*/
-            
-            for (int i = 0; i < totalPixels; i++)
-            {
-                int dr, db, dg;
-                dr = pixels_r[i] - pixels_r_bg[i];
-                if (dr<0) dr*=-1;
-                dg = pixels_g[i] - pixels_g_bg[i];
-                if (dg<0) dg*=-1;
-                db = pixels_b[i] - pixels_b_bg[i];
-                if (db<0) db*=-1;
-                
-                if (dr > threshold && dg > threshold && db > threshold) {
-                    diffWorkImage[i] = 255;
-                }
-                else
-                    diffWorkImage[i] = 0;
+            if (dr > threshold || dg > threshold || db > threshold) {
+                diffWorkImage[i] = 255;
             }
-            
-            
-            /*
-             for (int i = 0; i < totalPixels; i++)
-             {
-             a=(pixels_r[i]*pixels_r_bg[i])+(pixels_g[i]*pixels_g_bg[i])+(pixels_b[i]*pixels_b_bg[i]);
-             b=((pixels_r_bg[i]*pixels_r_bg[i])+(pixels_g_bg[i]*pixels_g_bg[i])+(pixels_b_bg[i]*pixels_b_bg[i]));
-             d=a/b;
-             v1=(pixels_r[i]-d*pixels_r_bg[i]);
-             v1=v1*v1;
-             v2=(pixels_g[i]-d*pixels_g_bg[i]);
-             v2=v2*v2;
-             v3=(pixels_b[i]-d*pixels_b_bg[i]);
-             v3=v3*v3;
-             
-             diffWorkImage[i]=0;
-             
-             //treshold for ligthness and color
-             if((abs((d)-1))>(double)threshold/100&&sqrt(v1+v2+v3)>c_threshold)
-             {
-             diffWorkImage[i]=255;
-             }
-             }*/
-            BinImage=diffWorkImage;
-            BinImage.erode();
-            BinImage.blurGaussian();
-            BinImage.dilate_3x3();
-            
-            
+            else
+                diffWorkImage[i] = 0;
         }
+        
+        //improve edges 
+        BinImage=diffWorkImage;
+        BinImage.erode();
+        BinImage.blurGaussian();
+        BinImage.dilate_3x3();
         
 	}
 }
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
-
+    
 	switch (key){
 		case ' ':
 			bLearnBakground = true;
@@ -239,6 +247,13 @@ void testApp::keyPressed(int key){
 		case '-':
 			threshold --;
 			if (threshold < 0) threshold = 0;
+			break;
+        case 'n':
+			maxShownLayers--;
+			if (maxShownLayers < 0) maxShownLayers = 0;
+			break;
+        case 'm':
+			maxShownLayers++;
 			break;
         case 'p':
             savePicture();
@@ -254,40 +269,40 @@ void testApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void testApp::keyReleased(int key){
-
+    
 }
 
 //--------------------------------------------------------------
 void testApp::mouseMoved(int x, int y ){
-
+    
 }
 
 //--------------------------------------------------------------
 void testApp::mouseDragged(int x, int y, int button){
-
+    
 }
 
 //--------------------------------------------------------------
 void testApp::mousePressed(int x, int y, int button){
-
+    
 }
 
 //--------------------------------------------------------------
 void testApp::mouseReleased(int x, int y, int button){
-
+    
 }
 
 //--------------------------------------------------------------
 void testApp::windowResized(int w, int h){
-
+    
 }
 
 //--------------------------------------------------------------
 void testApp::gotMessage(ofMessage msg){
-
+    
 }
 
 //--------------------------------------------------------------
 void testApp::dragEvent(ofDragInfo dragInfo){ 
-
+    
 }
