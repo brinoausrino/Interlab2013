@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxXmlSettings.h"
 #include "ofxOpenCv.h"
+#include "ofxSimpleSerial.h"
 
 enum IMAGE_MODE { COLOR, BLACKWHITE, SEPIA };
 
@@ -27,6 +28,7 @@ public:
     void savePicture();
     void updateTemporaryImage();
     void processCurrentImage();
+    void onNewMessage(string & message);
     
     
     ofVideoGrabber          _vidGrabber;
@@ -78,6 +80,12 @@ private:
     //textinterface
     bool                    showGui;
     
-    
+    //serial
+    bool                    useSerial;
+    string                  serialDevice;
+    int                     baudRate;
+    string                  serialMessage;
+    ofxSimpleSerial         _serial;
+    float                   readTime;	
 };
 
