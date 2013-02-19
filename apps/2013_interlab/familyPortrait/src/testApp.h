@@ -82,6 +82,7 @@ private:
     
     //serial
     bool                    useSerial;
+    bool                    isPressed;
     string                  serialDevice;
     int                     baudRate;
     string                  serialMessage;

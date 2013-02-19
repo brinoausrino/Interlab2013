@@ -94,6 +94,7 @@ void testApp::setup(){
     
    //serial setup
     if (useSerial) {
+        isPressed = false;
         _serial.setup(serialDevice, baudRate);
         _serial.startContinuesRead();
         ofAddListener(_serial.NEW_MESSAGE,this,&testApp::onNewMessage);
@@ -410,7 +411,12 @@ void testApp::dragEvent(ofDragInfo dragInfo){
 
 void testApp::onNewMessage(string & message)
 {
-    if (message == serialMessage) {
+    if (message == serialMessage && !isPressed) {
         savePicture();
+        isPressed = true;
+    }
+    else if(message != serialMessage && isPressed)
+    {
+        isPressed = false;
     }
 }
