@@ -24,7 +24,26 @@ void testApp::setup(){
 	//serial.setup("/dev/tty.usbserial-A4001JEC",9600); // mac osx example
     serial.setup("/dev/tty.usbmodem411", 9600);
 	//serial.setup("/dev/ttyUSB0", 9600); //linux example
-
+    
+    vector<int> argTypes1;
+	argTypes1.push_back(TYPEINT);
+	struct MessageFormat mf1 = {"g", argTypes1};
+	messageFormats.push_back(mf1);
+    
+    vector<int> argTypes2;
+	argTypes2.push_back(TYPEINT);
+	struct MessageFormat mf2 = {"h", argTypes2};
+	messageFormats.push_back(mf2);
+    
+    vector<int> argTypes3;
+	argTypes3.push_back(TYPEINT);
+	struct MessageFormat mf3 = {"i", argTypes3};
+	messageFormats.push_back(mf3);
+    
+    vector<int> argTypes4;
+	argTypes4.push_back(TYPEINT);
+	struct MessageFormat mf4 = {"j", argTypes4};
+	messageFormats.push_back(mf4);
 }
 
 //--------------------------------------------------------------
@@ -42,7 +61,45 @@ void testApp::update(){
 		// get the next message
 		ofxOscMessage m;
 		receiver.getNextMessage(&m);
-
+        
+        for (int i=0; i<messageFormats.size(); ++i) {
+            if(m.getAddress() == messageFormats[i].addressName){
+                
+                //write address
+                serial.writeByte(m.getAddress()[0]);
+                
+                //get and write arguments
+                for(int j=0; j<messageFormats[i].argTypes.size(); ++j){
+                    int type = messageFormats[i].argTypes[j];
+                    
+                    switch(type){
+                        case TYPESTRING:
+                            
+                            serial.writeByte(m.getArgAsString(j)[0]);
+                            
+                            cout << "got " << m.getAddress()[0] << " write param " << j << " string " << m.getArgAsString(j)[0] << endl;
+                            break;
+                        case TYPEINT:
+                            
+                            serial.writeByte(m.getArgAsInt32(j));
+                            
+                            cout << "got " << m.getAddress()[0] << " write param " << j << " int " << m.getArgAsInt32(j) << endl;
+                            break;
+                        case TYPEFLOAT:
+                            
+                            serial.writeByte(m.getArgAsFloat(j));
+                            
+                            cout << "got " << m.getAddress()[0] << " write param " << j << " float " << m.getArgAsFloat(j) << endl;
+                            break;
+                    }
+                }
+            }
+        }
+        
+        
+        
+        
+        
 		// check for mouse moved message
 		if(m.getAddress() == "/mouse/position"){
 			// both the arguments are int32's
@@ -53,20 +110,6 @@ void testApp::update(){
 		else if(m.getAddress() == "/mouse/button"){
 			// the single argument is a string
 			mouseButtonState = m.getArgAsString(0);
-		}
-        // check for misterious z message
-		else if(m.getAddress() == "z"){
-            
-            
-            
-			// the single argument is a string
-			int arg = m.getArgAsInt32(0);
-            
-            cout << "got z write a" << arg << endl;
-            
-            serial.writeByte('a');
-            //serial.writeByte('|');
-            serial.writeByte(arg);
 		}
 		else{
 			// unrecognized message: display on the bottom of the screen
