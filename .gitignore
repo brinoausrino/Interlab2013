@@ -26,3 +26,7 @@ apps/2013_interlab/familyPortrait/bin/opencvExample.app
 
 apps/2013_interlab/oscSender/bin/oscSenderExampleDebug.app
 apps/2013_interlab/oscSender/build
+
+apps/2013_interlab/familyPortrait/bin
+!apps/2013_interlab/familyPortrait/bin/data
+apps/2013_interlab/familyPortrait/obj
