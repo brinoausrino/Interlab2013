@@ -57,38 +57,27 @@ void testApp::draw(){
 //--------------------------------------------------------------
 void testApp::onNewMessage(string & message)
 {
-   
-	for (int i=0; i<messageFormats.size(); ++i) {
+    cout << message << endl;
+    
+    for (int i=0; i<messageFormats.size(); ++i) {
         
-        
-        cout << message << endl;
-        
+        //split message e.g. "a|1|2"
         vector<string> messageParts = ofSplitString(message, "|");
         
         if(messageParts.size()>1 && messageParts[0] == messageFormats[i].addressName){
             
             cout << "ok" << endl;
         
-		//unsigned found = message.find(messageFormats[i].addressName);
-		//if (found!=std::string::npos){
-            
-            
 			//get address name
 			string addressName = messageFormats[i].addressName;
             messageParts.erase(messageParts.begin());
-            
-			//split off address name
-			//message.erase(0, addressName.length());
-			//get arguments
-			//vector<string> args = ofSplitString(message, "|");
-
+			
+            //create osc message
 			ofxOscMessage m;
 			m.setAddress(addressName);
 
-			
+			//get arguments
 			for(int j=0; j<messageFormats[i].argTypes.size(); ++j){
-				
-
 				int type = messageFormats[i].argTypes[j];
 				switch(type){
 					case TYPESTRING:

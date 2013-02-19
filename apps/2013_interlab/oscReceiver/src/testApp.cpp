@@ -12,6 +12,18 @@ void testApp::setup(){
 	mouseButtonState = "";
 
 	ofBackground(30, 30, 130);
+    
+    serial.listDevices();
+	vector <ofSerialDeviceInfo> deviceList = serial.getDeviceList();
+	
+	// this should be set to whatever com port your serial device is connected to.
+	// (ie, COM4 on a pc, /dev/tty.... on linux, /dev/tty... on a mac)
+	// arduino users check in arduino app....
+	//serial.setup(0, 9600); //open the first device
+	//serial.setup("COM4"); // windows example
+	//serial.setup("/dev/tty.usbserial-A4001JEC",9600); // mac osx example
+    serial.setup("/dev/tty.usbmodem411", 9600);
+	//serial.setup("/dev/ttyUSB0", 9600); //linux example
 
 }
 
@@ -41,6 +53,20 @@ void testApp::update(){
 		else if(m.getAddress() == "/mouse/button"){
 			// the single argument is a string
 			mouseButtonState = m.getArgAsString(0);
+		}
+        // check for misterious z message
+		else if(m.getAddress() == "z"){
+            
+            
+            
+			// the single argument is a string
+			int arg = m.getArgAsInt32(0);
+            
+            cout << "got z write a" << arg << endl;
+            
+            serial.writeByte('a');
+            //serial.writeByte('|');
+            serial.writeByte(arg);
 		}
 		else{
 			// unrecognized message: display on the bottom of the screen
