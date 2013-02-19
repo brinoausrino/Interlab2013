@@ -33,4 +33,6 @@ class testApp : public ofBaseApp {
 
 		int mouseX, mouseY;
 		string mouseButtonState;
+    
+        ofSerial	serial;
 };

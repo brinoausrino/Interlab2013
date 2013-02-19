@@ -23,6 +23,8 @@ apps/myApps
 
 apps/2013_interlab/emotiontracker_osc/bin/opencvExample.app
 apps/2013_interlab/familyPortrait/bin/opencvExample.app
+apps/2013_interlab/familyPortrait/build/
+
 
 apps/2013_interlab/oscSender/bin/oscSenderExampleDebug.app
 apps/2013_interlab/oscSender/build
@@ -30,3 +32,20 @@ apps/2013_interlab/oscSender/build
 apps/2013_interlab/familyPortrait/bin
 !apps/2013_interlab/familyPortrait/bin/data
 apps/2013_interlab/familyPortrait/obj
+
+apps/2013_interlab/PhotoBooth/bin/PhotoBoothDebug.app
+apps/2013_interlab/PhotoBooth/bin/PhotoBooth.app
+apps/2013_interlab/PhotoBooth/bin/data/capture/*
+apps/2013_interlab/PhotoBooth/bin/data/saved/*
+apps/2013_interlab/PhotoBooth/build/
+
+apps/2013_interlab/oscSender/build
+apps/2013_interlab/oscSender/obj
+apps/2013_interlab/oscSender/bin/*
+!apps/2013_interlab/oscSender/bin/data
+
+apps/2013_interlab/oscReceiver/build
+apps/2013_interlab/oscReceiver/obj
+apps/2013_interlab/oscReceiver/bin/*
+!apps/2013_interlab/oscReceiver/bin/data
+
