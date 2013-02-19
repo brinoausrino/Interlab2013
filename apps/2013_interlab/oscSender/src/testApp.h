@@ -35,18 +35,13 @@ class testApp : public ofBaseApp {
 		ofxSimpleSerial serial;
 
 		
+    
 		struct MessageFormat {
 			string addressName;
 			vector<int> argTypes;
 		};
-
-		vector<MessageFormat> messageFormats;
-
-		//static const int TypeString = 0;
-		//static const int TypeInt = 1;
-		//static const int TypeFloat = 2;
-    
-        enum types1 {TYPESTRING = 0, TYPEINT = 1, TYPEFLOAT = 2};
+        vector<MessageFormat> messageFormats;
+        enum types {TYPESTRING = 0, TYPEINT = 1, TYPEFLOAT = 2};
     
         
 };

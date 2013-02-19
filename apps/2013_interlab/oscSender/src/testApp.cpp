@@ -16,25 +16,24 @@ void testApp::setup(){
 	serial.sendRequest();
 
 	
-	vector<int> argTypes1;
+    vector<int> argTypes1;
 	argTypes1.push_back(TYPEINT);
-	struct MessageFormat mf1 = {"/test/eins", argTypes1};
+	struct MessageFormat mf1 = {"g", argTypes1};
 	messageFormats.push_back(mf1);
-
-	vector<int> argTypes2;
-	argTypes2.push_back(TYPESTRING);
-	struct MessageFormat mf2 = {"/test/zwei", argTypes2};
+    
+    vector<int> argTypes2;
+	argTypes2.push_back(TYPEINT);
+	struct MessageFormat mf2 = {"h", argTypes2};
 	messageFormats.push_back(mf2);
-
-	vector<int> argTypes3;
+    
+    vector<int> argTypes3;
 	argTypes3.push_back(TYPEINT);
-	argTypes3.push_back(TYPESTRING);
-	struct MessageFormat mf3 = {"/test/drei", argTypes3};
+	struct MessageFormat mf3 = {"i", argTypes3};
 	messageFormats.push_back(mf3);
     
     vector<int> argTypes4;
 	argTypes4.push_back(TYPEINT);
-	struct MessageFormat mf4 = {"z", argTypes4};
+	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
 }
 
@@ -82,10 +81,13 @@ void testApp::onNewMessage(string & message)
 				switch(type){
 					case TYPESTRING:
 						m.addStringArg(ofToString(messageParts[j]));
+                        break;
 					case TYPEINT:
 						m.addIntArg(ofToInt(messageParts[j]));
+                        break;
 					case TYPEFLOAT:
 						m.addFloatArg(ofToFloat(messageParts[j]));
+                        break;
 				}
 			}
             
@@ -105,17 +107,21 @@ void testApp::keyPressed(int key){
 		m.addFloatArg(ofGetElapsedTimef());
 		sender.sendMessage(m);
 	}
-	if(key == 's' || key == 'S'){
-		string message = "/test/eins|9";
+	if(key == 'g' || key == 'G'){
+		string message = "g|1";
 		onNewMessage(message);	
 	}
-	if(key == 'd' || key == 'D'){
-		string message = "/test/zwei|hallo";
+	if(key == 'h' || key == 'H'){
+		string message = "h|0";
 		onNewMessage(message);	
 	}
-	if(key == 'f' || key == 'F'){
-		string message = "/test/drei|12|zwoelf";
+	if(key == 'i' || key == 'I'){
+		string message = "i|1";
 		onNewMessage(message);	
+	}
+    if(key == 'j' || key == 'J'){
+		string message = "j|1";
+		onNewMessage(message);
 	}
 }
 
