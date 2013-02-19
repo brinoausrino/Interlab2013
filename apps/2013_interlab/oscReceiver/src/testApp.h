@@ -35,4 +35,11 @@ class testApp : public ofBaseApp {
 		string mouseButtonState;
     
         ofSerial	serial;
+    
+        struct MessageFormat {
+            string addressName;
+            vector<int> argTypes;
+        };
+        vector<MessageFormat> messageFormats;
+        enum types {TYPESTRING = 0, TYPEINT = 1, TYPEFLOAT = 2};
 };
