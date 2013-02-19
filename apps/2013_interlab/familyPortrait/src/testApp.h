@@ -88,5 +88,6 @@ private:
     string                  serialMessage;
     ofxSimpleSerial         _serial;
     float                   readTime;	
+    int                     shotTime, shotBegin;
 };
 

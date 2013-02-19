@@ -2,6 +2,9 @@
 
 //--------------------------------------------------------------
 void testApp::setup(){
+    shotTime = 1000;
+    shotBegin = -1000;
+    
     ofxXmlSettings XML;
     if( XML.loadFile("mySettings.xml") ){
 		cout << "mySettings.xml loaded!" << endl;
@@ -155,6 +158,11 @@ void testApp::draw(){
         toningPicture.draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
     }
     
+    if (ofGetElapsedTimeMillis()-shotBegin < shotTime) {
+        int alpha = ofMap(ofGetElapsedTimeMillis()-shotBegin, 0, shotTime, 255, 0);
+        ofSetColor(255, 255, 255,alpha);
+        ofRect(0, 0, ofGetScreenWidth(), ofGetScreenHeight());
+    }
     
     //draw gui
     if (showGui)
@@ -242,6 +250,7 @@ void testApp::savePicture(){
     
     
     tempPic.saveImage(file);
+    shotBegin = ofGetElapsedTimeMillis();
 }
 
 void testApp::updateTemporaryImage(){
