@@ -44,6 +44,8 @@ void testApp::setup(){
 	argTypes4.push_back(TYPEINT);
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
+    
+    soundAddress = 'sound';
 }
 
 //--------------------------------------------------------------
@@ -96,8 +98,7 @@ void testApp::update(){
             }
         }
         
-        
-        
+        testApp::notifySound();
         
         
 		// check for mouse moved message
@@ -164,6 +165,15 @@ void testApp::draw(){
 
 
 
+}
+
+//--------------------------------------------------------------
+void testApp::notifySound(){
+	
+    ofxOscMessage sm;
+    sm.setAddress(soundAddress);
+    sm.addIntArg(1);
+    soundSender.sendMessage(sm);
 }
 
 //--------------------------------------------------------------
