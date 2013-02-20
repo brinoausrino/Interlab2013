@@ -90,5 +90,7 @@ private:
     ofxSimpleSerial         _serial;
     float                   readTime;	
     int                     shotTime, shotBegin;
+    
+    ofSoundPlayer sounds;
 };
 

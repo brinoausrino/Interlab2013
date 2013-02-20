@@ -104,6 +104,9 @@ void testApp::setup(){
         ofAddListener(_serial.NEW_MESSAGE,this,&testApp::onNewMessage);
         _serial.sendRequest();
     }
+    
+    //camera capture sound, for fun
+	sounds.loadSound("sounds/camera_snap.wav");
 }
 
 //--------------------------------------------------------------
@@ -260,8 +263,12 @@ void testApp::savePicture(){
     file += ".png";
     
     
+    
     tempPic.saveImage(file);
     shotBegin = ofGetElapsedTimeMillis();
+    
+    //play sound
+    sounds.play();
 }
 
 void testApp::updateTemporaryImage(){
