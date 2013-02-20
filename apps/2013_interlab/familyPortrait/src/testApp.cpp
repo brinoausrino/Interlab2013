@@ -2,6 +2,9 @@
 
 //--------------------------------------------------------------
 void testApp::setup(){
+    shotTime = 1000;
+    shotBegin = -1000;
+    
     ofxXmlSettings XML;
     if( XML.loadFile("mySettings.xml") ){
 		cout << "mySettings.xml loaded!" << endl;
@@ -9,13 +12,23 @@ void testApp::setup(){
 		cout << "unable to load mySettings.xml check data/ folder" << endl;
 	}
     
+    useSerial = false;
+    string useSerialTemp = XML.getValue("FILES:USE_SERIAL","false");
+    if (useSerialTemp == "true") {
+        useSerial = true;
+    }
+    serialMessage = XML.getValue("FILES:SERIAL_MESSAGE","0");
+    serialDevice = XML.getValue("FILES:SERIAL_DEVICE","com0");
+    baudRate = XML.getValue("FILES:BAUD_RATE",56400);
+    
     destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "images/");
     threshold = XML.getValue("IMAGE_PROCESSING:THRESHOLD",80);
-    maxShownLayers = XML.getValue("IMAGE_PROCESSING:MAX_SHOWN_PICTURES",10);
+    maxShownLayers = XML.getValue("IMAGE_PROCESSING:MAX_SHOWN_PICTURES",11);
     city = XML.getValue("FILES:CITY", "");
     timeZone = XML.getValue("FILES:TIMEZONE", 0);
     _wCamera = XML.getValue("IMAGE_PROCESSING:WIDTH",10);
     _hCamera = XML.getValue("IMAGE_PROCESSING:HEIGTH",10);
+    
     
     string imgMode = XML.getValue("IMAGE_PROCESSING:IMAGE_MODE","COLOR");
     if (imgMode == "COLOR") {
@@ -28,6 +41,9 @@ void testApp::setup(){
         imgMode = SEPIA;
     }
     
+    
+    
+    readTime = ofGetElapsedTimeMillis();
     
     ofSetWindowShape(_wCamera, _hCamera);
     
@@ -74,12 +90,23 @@ void testApp::setup(){
         ofImage img;
         img.loadImage(dir.getPath(i));
         layer.push_back(img);
+        layerName.push_back(dir.getPath(i));
     }
     
     showGui = false;
     
     
-   
+   //serial setup
+    if (useSerial) {
+        isPressed = false;
+        _serial.setup(serialDevice, baudRate);
+        _serial.startContinuesRead();
+        ofAddListener(_serial.NEW_MESSAGE,this,&testApp::onNewMessage);
+        _serial.sendRequest();
+    }
+    
+    //camera capture sound, for fun
+	sounds.loadSound("sounds/camera_snap.wav");
 }
 
 //--------------------------------------------------------------
@@ -92,12 +119,22 @@ void testApp::update(){
     ofDirectory dir;
     int nLayersNew = dir.listDir(destinationFolder);
     if (nLayers < nLayersNew) {
-        for (int i=nLayers; i<nLayersNew; ++i) {
-            ofImage img;
-            img.loadImage(dir.getPath(i));
-            layer.push_back(img);
-            nLayers = nLayersNew;
+        for (int i=0; i<nLayersNew; ++i) {
+            string path = dir.getPath(i);
+            bool isIn = false;
+            for (int j=0; j<layer.size(); ++j) {
+                if (path == layerName[j]) {
+                    isIn = true;
+                }
+            }
+            if (!isIn) {
+                ofImage img;
+                img.loadImage(dir.getPath(i));
+                layer.push_back(img);
+                layerName.push_back(dir.getPath(i));
+            }  
         }
+        nLayers = nLayersNew;
     }
     
 }
@@ -135,6 +172,11 @@ void testApp::draw(){
         toningPicture.draw(0, 0,ofGetWindowWidth(),ofGetWindowHeight());
     }
     
+    if (ofGetElapsedTimeMillis()-shotBegin < shotTime) {
+        int alpha = ofMap(ofGetElapsedTimeMillis()-shotBegin, 0, shotTime, 255, 0);
+        ofSetColor(255, 255, 255,alpha);
+        ofRect(0, 0, ofGetScreenWidth(), ofGetScreenHeight());
+    }
     
     //draw gui
     if (showGui)
@@ -171,10 +213,25 @@ void testApp::draw(){
         t+=("\n");
         t+= "timezone: ";
         t+= ofToString(timeZone);
+        t+=("\n");
+        if (useSerial) {
+            t+= "useSerial: true";
+        }
+        else  
+            t+= "useSerial: false";
+        t+=("\n");
+        t+= "serial Device: ";
+        t+= serialDevice;
+        t+=("\n");
+        t+= "baudRate: ";
+        t+= ofToString(baudRate);
+        t+=("\n");
+        t+= "serialMessage: ";
+        t+= serialMessage;
         ofSetColor(0, 0, 0);
-        ofRect(0, ofGetWindowHeight() - 105, 700, 105);
+        ofRect(0, ofGetWindowHeight() - 160, 700, 160);
         ofSetColor(255, 255, 255);
-        ofDrawBitmapString(t, 20, ofGetWindowHeight() - 90);
+        ofDrawBitmapString(t, 20, ofGetWindowHeight() - 145);
     }
 }
 
@@ -206,7 +263,12 @@ void testApp::savePicture(){
     file += ".png";
     
     
+    
     tempPic.saveImage(file);
+    shotBegin = ofGetElapsedTimeMillis();
+    
+    //play sound
+    sounds.play();
 }
 
 void testApp::updateTemporaryImage(){
@@ -372,4 +434,16 @@ void testApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void testApp::dragEvent(ofDragInfo dragInfo){ 
     
+}
+
+void testApp::onNewMessage(string & message)
+{
+    if (message == serialMessage && !isPressed) {
+        savePicture();
+        isPressed = true;
+    }
+    else if(message != serialMessage && isPressed)
+    {
+        isPressed = false;
+    }
 }

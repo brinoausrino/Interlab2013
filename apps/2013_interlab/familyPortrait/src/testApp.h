@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxXmlSettings.h"
 #include "ofxOpenCv.h"
+#include "ofxSimpleSerial.h"
 
 enum IMAGE_MODE { COLOR, BLACKWHITE, SEPIA };
 
@@ -27,6 +28,7 @@ public:
     void savePicture();
     void updateTemporaryImage();
     void processCurrentImage();
+    void onNewMessage(string & message);
     
     
     ofVideoGrabber          _vidGrabber;
@@ -41,6 +43,7 @@ private:
     int                     nLayers;
     int                     maxShownLayers;
     vector<ofImage>         layer;  // the layers
+    vector<string>          layerName;
     ofFbo                   fbo;
     ofxCvGrayscaleImage     toningPicture;
     ofxCvColorImage         toningPictureColor;
@@ -78,6 +81,16 @@ private:
     //textinterface
     bool                    showGui;
     
+    //serial
+    bool                    useSerial;
+    bool                    isPressed;
+    string                  serialDevice;
+    int                     baudRate;
+    string                  serialMessage;
+    ofxSimpleSerial         _serial;
+    float                   readTime;	
+    int                     shotTime, shotBegin;
     
+    ofSoundPlayer sounds;
 };
 

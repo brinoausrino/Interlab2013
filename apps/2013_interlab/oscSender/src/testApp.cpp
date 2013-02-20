@@ -9,8 +9,8 @@ void testApp::setup(){
 	sender.setup(HOST, PORT);
 
 	//serial reader
-	//serial.setup("COM8", 9600);
-    serial.setup("/dev/tty.usbserial-A600K2BH", 9600);
+	serial.setup("COM4", 9600);
+    //serial.setup("/dev/tty.usbserial-A600K2BH", 9600);
     serial.startContinuesRead();
     ofAddListener(serial.NEW_MESSAGE,this,&testApp::onNewMessage);
 	serial.sendRequest();
