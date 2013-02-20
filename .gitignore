@@ -23,10 +23,14 @@ apps/myApps
 
 apps/2013_interlab/emotiontracker_osc/bin/opencvExample.app
 apps/2013_interlab/familyPortrait/bin/opencvExample.app
+apps/2013_interlab/familyPortrait/bin/data/mySettings.xml
 apps/2013_interlab/familyPortrait/build/
 
 apps/2013_interlab/familyPortraitProjection/bin/opencvExample.app
 apps/2013_interlab/familyPortraitProjection/build/
+
+apps/2013_interlab/PhotoBooth_combined/bin/ofAppDebug.app
+apps/2013_interlab/PhotoBooth_combined/build
 
 apps/2013_interlab/oscSender/bin/oscSenderExampleDebug.app
 apps/2013_interlab/oscSender/build
@@ -51,7 +55,6 @@ apps/2013_interlab/oscReceiver/obj
 apps/2013_interlab/oscReceiver/bin/*
 !apps/2013_interlab/oscReceiver/bin/data
 
-apps/2013_interlab/faceTest
 apps/2013_interlab/PhotoBooth
 apps/2013_interlab/PhotoBooth/Photobooth.xcodeproj
 
