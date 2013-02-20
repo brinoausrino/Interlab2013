@@ -1,0 +1,8 @@
+<FILES>
+    <CITY>Dresden</CITY>
+    <TIMEZONE>-1</TIMEZONE>
+    <PICTURE_FOLDER>/Users/brian/Dropbox/Interlab/PhotoBooth/Faces_Dresden/</PICTURE_FOLDER>
+</FILES>
+<IMAGE_PROCESSING>
+    <PRINTER>printername</PRINTER>
+</IMAGE_PROCESSING>
