@@ -8,10 +8,7 @@ void testApp::setup() {
 #endif
 	ofSetVerticalSync(true);
 	cloneReady = false;
-	/*if(_FULLSCREEN)
-		cam.initGrabber(ofGetScreenWidth(),ofGetScreenHeight());
-	else*/
-		cam.initGrabber(640, 480);
+	cam.initGrabber(640, 480);
 	clone.setup(cam.getWidth(), cam.getHeight());
 	ofFbo::Settings settings;
 	settings.width = cam.getWidth();
@@ -23,44 +20,67 @@ void testApp::setup() {
 	srcTracker.setIterations(25);
 	srcTracker.setAttempts(4);
 	
+	//camera capture sound, for fun
 	sounds.loadSound("sounds/camera_snap.wav");
-	//sounds.setMultiPlay(true);
 
-	//TODO: get directory settings
-	/*ofxXmlSettings XML;
+	//get city and directory settings
+	ofxXmlSettings XML;
     if( XML.loadFile("mySettings.xml") ){
 		cout << "mySettings.xml loaded!" << endl;
 	}else{
 		cout << "unable to load mySettings.xml check data/ folder" << endl;
 	}
     
-    destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "images/");
-    city = XML.getValue("FILES:CITY", "");
-    timeZone = XML.getValue("FILES:TIMEZONE", 0);*/
+    destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "") + "Interlab/PhotoBooth/";
+    city = ofToLower( XML.getValue("FILES:CITY", "") );
+   /* timeZone = XML.getValue("FILES:TIMEZONE", 0);*/
+	printerName = XML.getValue("IMAGE_PROCESSING:PRINTER", "");
+
+	//DEBUG
+	printf("PRINTER is %s", printerName.c_str());	
+	printf("Current City: %s", city.c_str());
 	
+#ifdef TARGET_OSX
+	//change data path root to Dropbox
+	ofSetDataPathRoot(destinationFolder );
+#endif
 	
-	//TOOD: connect to drop box folderss
-	
-	//directory of faces to map onto live image
 	faces.allowExt("jpg");
 	faces.allowExt("png");
-	faces.listDir("faces");
+	printed.allowExt("jpg");
+	printed.allowExt("png");
+	captured.allowExt("png");
+	captured.allowExt("png");
 	
-	//diretory of images saved (clean user image)
-	captured.listDir("capture");
+	if(city == "cairo")
+	{
+		//FACES directory in Cairo is Faces_Dresden
+		faces.listDir("Faces_Dresden");
+
+		//Diretory of images saved (clean user image) from Cairo for Dresden
+		captured.listDir("Faces_Cairo"); 
+	}
+	else //DRESDEN
+	{
+		//FACES directory in Cairo is Faces_Dresden
+		faces.listDir("Faces_Cairo"); 
+		
+		//Diretory of images saved (clean user image) from Dresden to Cairo
+		captured.listDir("Faces_Dresden"); 			
+	}
 	
 	//directory of mapped-face that selected to print/save
-	printed.listDir("saved");
+	printed.listDir("PrintedPhotos");
 	
 	wait = 0;
 	currentFace = 0;
 	imageSequence = 0;
 	videoCaptured = imageCaptured = false;
 	
-	
+	//debug
 	printf("# of files %d",faces.numFiles());
 	
-	//TODO: change to latest face from Dresden, right click/left click toggles through faces
+	//load latest face from other city
 	if(faces.size()!=0){
 		currentFace = faces.numFiles() - 1;
 		loadFace(faces.getPath(currentFace));
@@ -109,7 +129,7 @@ void testApp::draw() {
 	if(src.getWidth() > 0 && cloneReady) {
 		clone.draw(0, 0);
 	} else {
-		cam.draw(0, 0);
+		cam.draw(0, 0, ofGetWindowWidth(),ofGetWindowHeight());
 	}
 	
 	if(!camTracker.getFound()) {
@@ -145,36 +165,70 @@ void testApp::dragEvent(ofDragInfo dragInfo) {
 	loadFace(dragInfo.files[0]);
 }
 
-void testApp::keyPressed(int key){
+string testApp::getTimeStamp()
+{
+	string timestamp = ofGetTimestampString();
+    string t2 = timestamp.substr(11,2);
+    int ttemp = ofToInt(t2);
+    ttemp+=timeZone;
+    t2 = ofToString(ttemp);
+    timestamp[11] = t2[0];
+    timestamp[12] = t2[1];
 	
-	printf("faces.size() = %d. current face %d",faces.size(),currentFace);
-	switch(key){
-	/*case OF_KEY_UP:
-		currentFace++;
-		break;*/
-	case OF_KEY_DOWN:
-		currentFace--;
-		break;
-	case OF_KEY_RIGHT:
-			if(camTracker.getFound())
-			{
-				string imagePath = "saved/image" + ofToString(printed.numFiles()) + ".jpg";
-				ofSaveScreen(imagePath);
-				videoCaptured = true;
-			}
-			break;
-	case OF_KEY_LEFT:
-			if(camTracker.getFound())
-			{
-				string capturePath = "capture/image" + ofToString(captured.numFiles()) + ".jpg";
-				sounds.play();
-				ofSaveImage(cam.getPixelsRef(), capturePath); //, ofImageQualityType qualityLevel=OF_IMAGE_QUALITY_BEST)
-				imageCaptured = true;
-				
-			}
-			break;
-	}
+	return timestamp;
+}
 
+//save & print to shared directory of mapped-faces
+void testApp::printPicture()
+{
+	string imagePath = printed.getAbsolutePath();
+	imagePath += "/";
+	imagePath += getTimeStamp();
+	imagePath += "_";
+    imagePath += city;
+	//imagePath += ofToString(printed.numFiles()); 
+	imagePath += ".jpg";
+	
+	printf("PRINT PICTURE! %s", imagePath.c_str());
+	
+	//save picture
+	ofSaveScreen(imagePath);
+	videoCaptured = true;
+	
+	//TODO TEST
+	//print picture
+	string command = "lp -d " + printerName + " " + ofFilePath::getAbsolutePath(imagePath);
+	printf(command.c_str());
+	
+	system(command.c_str());
+}
+
+void testApp::saveNewFace()
+{
+	if(camTracker.getFound())
+	{		
+		//string capturePath = captured.getAbsolutePath() + ofToString(captured.numFiles()) + ".jpg";
+
+		string capturePath = captured.getAbsolutePath();
+		capturePath += "/";
+		capturePath += getTimeStamp();
+		//capturePath += ofToString(captured.numFiles()); 
+		capturePath += ".jpg";
+		
+		printf("SAVE FACE for other city! %s", capturePath.c_str());	
+		
+		//play sound
+		sounds.play();
+		ofSaveImage(cam.getPixelsRef(), capturePath); //, ofImageQualityType qualityLevel=OF_IMAGE_QUALITY_BEST)
+		imageCaptured = true;
+		
+	}
+}
+
+//TODO: Change this to a random shuffle
+void testApp::shuffleFace()
+{
+	currentFace--;
 	
 	//currentFace = ofClamp(currentFace,0,faces.size()-1);
 	if(faces.size()!=0){
@@ -184,4 +238,44 @@ void testApp::keyPressed(int key){
 		
 		loadFace(faces.getPath(currentFace));
 	}
+}
+
+void testApp::errorMessage()
+{
+	
+}
+
+void testApp::keyPressed(int key){
+	
+	switch(key){
+		case OF_KEY_DOWN:
+			shuffleFace();
+			break;
+		case 's' :
+			saveNewFace();
+			break;
+		case 'p':
+			printPicture();
+			break;
+		case 'f':
+			//not fully working yet! some bugs
+            ofToggleFullscreen();
+            break;
+	}
+	
+}
+
+void testApp::mousePressed(int x, int y, int button){
+	
+	printf("button pressed: %d", button);
+	
+	//0: Mouse Button 1, shuffle pictures
+	//1: Mouse Button 2, print picture
+	switch(button){
+		case 0: 
+			break;
+		case 1:
+			break;
+	}
+    
 }
