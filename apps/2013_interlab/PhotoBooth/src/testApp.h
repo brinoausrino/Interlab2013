@@ -17,6 +17,14 @@ public:
 	void loadFace(string face);
 	
 	void keyPressed(int key);
+	void mousePressed(int x, int y, int button);
+	
+	void shuffleFace();
+	void printPicture();
+	void saveNewFace();
+	void errorMessage();
+	string getTimeStamp();
+
 
 	ofxFaceTrackerThreaded camTracker;
 	ofVideoGrabber cam;
@@ -30,8 +38,12 @@ public:
 	ofFbo srcFbo, maskFbo;
 
 	ofDirectory faces; //directory of faces to map onto live image
+					   //for Cairo it's Faces_Dresden
+					   //for Dresden it's Faces_Cairo
 	ofDirectory captured; //diretory of images saved (clean user image)
-	ofDirectory printed; //directory of mapped-face that selected to print/save
+						  //for Cairo it's Faces_Cairo	
+						  //for Dresden it's Faces_Dresden
+	ofDirectory printed; //directory of mapped-face that selected to print/save (common folder for both)
 	
 	int currentFace;
 	
@@ -42,6 +54,7 @@ public:
 	
 	string  destinationFolder;
 	string city;
+	string printerName;
     int timeZone;
 	
 	ofSoundPlayer sounds;

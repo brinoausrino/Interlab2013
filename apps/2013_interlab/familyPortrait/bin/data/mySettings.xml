@@ -1,7 +1,7 @@
 <FILES>
     <CITY>Dresden</CITY>
     <TIMEZONE>0</TIMEZONE>
-    <PICTURE_FOLDER>/Users/brian/Dropbox/familyPortrait/</PICTURE_FOLDER>
+    <PICTURE_FOLDER>/Users/brian/Dropbox/interlab/familyPortrait/</PICTURE_FOLDER>
     <BAUD_RATE>9600</BAUD_RATE>
     <SERIAL_DEVICE>/dev/tty.usbmodemfa131</SERIAL_DEVICE>
     <SERIAL_MESSAGE>0</SERIAL_MESSAGE>

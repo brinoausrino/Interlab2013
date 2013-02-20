@@ -43,6 +43,7 @@ private:
     int                     nLayers;
     int                     maxShownLayers;
     vector<ofImage>         layer;  // the layers
+    vector<string>          layerName;
     ofFbo                   fbo;
     ofxCvGrayscaleImage     toningPicture;
     ofxCvColorImage         toningPictureColor;
@@ -88,5 +89,8 @@ private:
     string                  serialMessage;
     ofxSimpleSerial         _serial;
     float                   readTime;	
+    int                     shotTime, shotBegin;
+    
+    ofSoundPlayer sounds;
 };
 
