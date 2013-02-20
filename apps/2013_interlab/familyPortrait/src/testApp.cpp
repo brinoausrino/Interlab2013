@@ -85,12 +85,14 @@ void testApp::setup(){
     
     //load the images
     ofDirectory dir;
-    nLayers = dir.listDir("images/");
+    nLayers = dir.listDir(destinationFolder);
     for (int i=0; i<nLayers; ++i) {
         ofImage img;
+        string path = dir.getPath(i);
         img.loadImage(dir.getPath(i));
         layer.push_back(img);
         layerName.push_back(dir.getPath(i));
+        //cout << path << endl;
     }
     
     showGui = false;

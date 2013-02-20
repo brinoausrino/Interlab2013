@@ -23,6 +23,7 @@ apps/myApps
 
 apps/2013_interlab/emotiontracker_osc/bin/opencvExample.app
 apps/2013_interlab/familyPortrait/bin/opencvExample.app
+apps/2013_interlab/familyPortrait/bin/data/mySettings.xml
 apps/2013_interlab/familyPortrait/build/
 
 apps/2013_interlab/familyPortraitProjection/bin/opencvExample.app
