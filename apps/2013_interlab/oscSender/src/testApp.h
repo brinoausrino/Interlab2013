@@ -5,7 +5,9 @@
 #include "ofxSimpleSerial.h"
 
 #define HOST "localhost"
-#define PORT 12345
+#define PORT 7000
+
+#define SOUNDHOST "192.168.2.48"
 
 
 
@@ -20,6 +22,8 @@ class testApp : public ofBaseApp {
 
 		void onNewMessage(string & message);
 
+        void notifySound();
+    
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y);
@@ -33,8 +37,9 @@ class testApp : public ofBaseApp {
 		ofTrueTypeFont font;
 		ofxOscSender sender;
 		ofxSimpleSerial serial;
-
-		
+    
+        ofxOscSender soundSender;
+        string soundAddress;
     
 		struct MessageFormat {
 			string addressName;

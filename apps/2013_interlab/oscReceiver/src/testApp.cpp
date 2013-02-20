@@ -6,6 +6,8 @@ void testApp::setup(){
 	cout << "listening for osc messages on port " << PORT << "\n";
 	receiver.setup(PORT);
 
+	soundSender.setup(SOUNDHOST, PORT);
+
 	current_msg_string = 0;
 	mouseX = 0;
 	mouseY = 0;
@@ -20,9 +22,9 @@ void testApp::setup(){
 	// (ie, COM4 on a pc, /dev/tty.... on linux, /dev/tty... on a mac)
 	// arduino users check in arduino app....
 	//serial.setup(0, 9600); //open the first device
-	//serial.setup("COM4"); // windows example
+	serial.setup("COM5", 9600); // windows example
 	//serial.setup("/dev/tty.usbserial-A4001JEC",9600); // mac osx example
-    serial.setup("/dev/tty.usbmodem411", 9600);
+    //serial.setup("/dev/tty.usbmodem411", 9600);
 	//serial.setup("/dev/ttyUSB0", 9600); //linux example
     
     vector<int> argTypes1;
@@ -44,6 +46,8 @@ void testApp::setup(){
 	argTypes4.push_back(TYPEINT);
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
+    
+    soundAddress = "soundrecieve";
 }
 
 //--------------------------------------------------------------
@@ -58,6 +62,7 @@ void testApp::update(){
 
 	// check for waiting messages
 	while(receiver.hasWaitingMessages()){
+		
 		// get the next message
 		ofxOscMessage m;
 		receiver.getNextMessage(&m);
@@ -65,6 +70,8 @@ void testApp::update(){
         for (int i=0; i<messageFormats.size(); ++i) {
             if(m.getAddress() == messageFormats[i].addressName){
                 
+				testApp::notifySound();
+
                 //write address
                 serial.writeByte(m.getAddress()[0]);
                 
@@ -96,11 +103,7 @@ void testApp::update(){
             }
         }
         
-        
-        
-        
-        
-		// check for mouse moved message
+        // check for mouse moved message
 		if(m.getAddress() == "/mouse/position"){
 			// both the arguments are int32's
 			mouseX = m.getArgAsInt32(0);
@@ -164,6 +167,15 @@ void testApp::draw(){
 
 
 
+}
+
+//--------------------------------------------------------------
+void testApp::notifySound(){
+	
+    ofxOscMessage sm;
+    sm.setAddress(soundAddress);
+    sm.addIntArg(1);
+    soundSender.sendMessage(sm);
 }
 
 //--------------------------------------------------------------
