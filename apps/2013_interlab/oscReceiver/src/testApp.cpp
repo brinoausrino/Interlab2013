@@ -22,7 +22,8 @@ void testApp::setup(){
 	//serial.setup(0, 9600); //open the first device
 	//serial.setup("COM4"); // windows example
 	//serial.setup("/dev/tty.usbserial-A4001JEC",9600); // mac osx example
-    serial.setup("/dev/tty.usbmodem411", 9600);
+	serial.setup("/dev/tty.usbserial-A9007OsB",9600); // yasmin's mac osx 
+   // serial.setup("/dev/tty.usbmodem411", 9600);
 	//serial.setup("/dev/ttyUSB0", 9600); //linux example
     
     vector<int> argTypes1;
