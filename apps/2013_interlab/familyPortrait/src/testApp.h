@@ -43,6 +43,7 @@ private:
     int                     nLayers;
     int                     maxShownLayers;
     vector<ofImage>         layer;  // the layers
+    vector<string>          layerName;
     ofFbo                   fbo;
     ofxCvGrayscaleImage     toningPicture;
     ofxCvColorImage         toningPictureColor;
