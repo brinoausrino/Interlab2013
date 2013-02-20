@@ -8,8 +8,10 @@ void testApp::setup() {
 #endif
 	ofSetVerticalSync(true);
 	cloneReady = false;
-	cam.initGrabber(640, 480);
+	cam.initGrabber(ofGetScreenWidth(), ofGetScreenHeight());
+	//cam.initGrabber(640, 480);
 	clone.setup(cam.getWidth(), cam.getHeight());
+	cam.setVerbose(true);
 	ofFbo::Settings settings;
 	settings.width = cam.getWidth();
 	settings.height = cam.getHeight();
@@ -129,7 +131,7 @@ void testApp::draw() {
 	if(src.getWidth() > 0 && cloneReady) {
 		clone.draw(0, 0);
 	} else {
-		cam.draw(0, 0, ofGetWindowWidth(),ofGetWindowHeight());
+		cam.draw(0, 0); //, ofGetWindowWidth(),ofGetWindowHeight());
 	}
 	
 	if(!camTracker.getFound()) {
@@ -179,6 +181,7 @@ string testApp::getTimeStamp()
 }
 
 //save & print to shared directory of mapped-faces
+//TODO: a5 printing (half the size)
 void testApp::printPicture()
 {
 	string imagePath = printed.getAbsolutePath();
