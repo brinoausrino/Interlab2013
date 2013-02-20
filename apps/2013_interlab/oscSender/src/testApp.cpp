@@ -7,7 +7,7 @@ void testApp::setup(){
 
 	// open an outgoing connection to HOST:PORT
 	sender.setup(HOST, PORT);
-    soundSender.setup(SOUNDHOST, PORT);
+    soundSender.setup(SOUNDHOST, SOUNDPORT);
 
 	//serial reader
 	serial.setup("COM4", 9600);
@@ -37,7 +37,7 @@ void testApp::setup(){
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
     
-    soundAddress = "soundsend";
+    soundAddress = "message/send";
 }
 
 //--------------------------------------------------------------
