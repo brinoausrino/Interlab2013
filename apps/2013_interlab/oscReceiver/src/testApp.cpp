@@ -6,6 +6,8 @@ void testApp::setup(){
 	cout << "listening for osc messages on port " << PORT << "\n";
 	receiver.setup(PORT);
 
+	soundSender.setup(SOUNDHOST, PORT);
+
 	current_msg_string = 0;
 	mouseX = 0;
 	mouseY = 0;
@@ -45,7 +47,7 @@ void testApp::setup(){
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
     
-    soundAddress = "sound";
+    soundAddress = "soundrecieve";
 }
 
 //--------------------------------------------------------------
@@ -60,6 +62,7 @@ void testApp::update(){
 
 	// check for waiting messages
 	while(receiver.hasWaitingMessages()){
+		
 		// get the next message
 		ofxOscMessage m;
 		receiver.getNextMessage(&m);
@@ -67,6 +70,8 @@ void testApp::update(){
         for (int i=0; i<messageFormats.size(); ++i) {
             if(m.getAddress() == messageFormats[i].addressName){
                 
+				testApp::notifySound();
+
                 //write address
                 serial.writeByte(m.getAddress()[0]);
                 
@@ -98,10 +103,7 @@ void testApp::update(){
             }
         }
         
-        testApp::notifySound();
-        
-        
-		// check for mouse moved message
+        // check for mouse moved message
 		if(m.getAddress() == "/mouse/position"){
 			// both the arguments are int32's
 			mouseX = m.getArgAsInt32(0);
