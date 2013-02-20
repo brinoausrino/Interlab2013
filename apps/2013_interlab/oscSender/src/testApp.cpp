@@ -37,7 +37,7 @@ void testApp::setup(){
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
     
-    soundAddress = 'sound';
+    soundAddress = "sound";
 }
 
 //--------------------------------------------------------------
@@ -153,8 +153,6 @@ void testApp::keyPressed(int key){
 		string message = "h|0";
 		onNewMessage(message);
 	}
-    
-    testApp::notifySound();
 }
 
 //--------------------------------------------------------------
