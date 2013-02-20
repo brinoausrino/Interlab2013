@@ -7,13 +7,17 @@
 #define PORT 12345
 #define NUM_MSG_STRINGS 20
 
+#define SOUNDHOST "192.168.2.48"
+
 class testApp : public ofBaseApp {
 	public:
 
 		void setup();
 		void update();
 		void draw();
-
+    
+        void notifySound();
+    
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y);
@@ -35,6 +39,9 @@ class testApp : public ofBaseApp {
 		string mouseButtonState;
     
         ofSerial	serial;
+    
+        ofxOscSender soundSender;
+        string soundAddress;
     
         struct MessageFormat {
             string addressName;

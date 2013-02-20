@@ -20,10 +20,11 @@ void testApp::setup(){
 	// (ie, COM4 on a pc, /dev/tty.... on linux, /dev/tty... on a mac)
 	// arduino users check in arduino app....
 	//serial.setup(0, 9600); //open the first device
-	//serial.setup("COM4"); // windows example
+	serial.setup("COM5", 9600); // windows example
 	//serial.setup("/dev/tty.usbserial-A4001JEC",9600); // mac osx example
-	serial.setup("/dev/tty.usbserial-A9007OsB",9600); // yasmin's mac osx 
+//	serial.setup("/dev/tty.usbserial-A9007OsB",9600); // yasmin's mac osx 
    // serial.setup("/dev/tty.usbmodem411", 9600);
+    //serial.setup("/dev/tty.usbmodem411", 9600);
 	//serial.setup("/dev/ttyUSB0", 9600); //linux example
     
     vector<int> argTypes1;
@@ -45,6 +46,8 @@ void testApp::setup(){
 	argTypes4.push_back(TYPEINT);
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
+    
+    soundAddress = "sound";
 }
 
 //--------------------------------------------------------------
@@ -97,8 +100,7 @@ void testApp::update(){
             }
         }
         
-        
-        
+        testApp::notifySound();
         
         
 		// check for mouse moved message
@@ -165,6 +167,15 @@ void testApp::draw(){
 
 
 
+}
+
+//--------------------------------------------------------------
+void testApp::notifySound(){
+	
+    ofxOscMessage sm;
+    sm.setAddress(soundAddress);
+    sm.addIntArg(1);
+    soundSender.sendMessage(sm);
 }
 
 //--------------------------------------------------------------

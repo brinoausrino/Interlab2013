@@ -90,6 +90,7 @@ void testApp::setup(){
         ofImage img;
         img.loadImage(dir.getPath(i));
         layer.push_back(img);
+        layerName.push_back(dir.getPath(i));
     }
     
     showGui = false;
@@ -103,6 +104,9 @@ void testApp::setup(){
         ofAddListener(_serial.NEW_MESSAGE,this,&testApp::onNewMessage);
         _serial.sendRequest();
     }
+    
+    //camera capture sound, for fun
+	sounds.loadSound("sounds/camera_snap.wav");
 }
 
 //--------------------------------------------------------------
@@ -115,12 +119,22 @@ void testApp::update(){
     ofDirectory dir;
     int nLayersNew = dir.listDir(destinationFolder);
     if (nLayers < nLayersNew) {
-        for (int i=nLayers; i<nLayersNew; ++i) {
-            ofImage img;
-            img.loadImage(dir.getPath(i));
-            layer.push_back(img);
-            nLayers = nLayersNew;
+        for (int i=0; i<nLayersNew; ++i) {
+            string path = dir.getPath(i);
+            bool isIn = false;
+            for (int j=0; j<layer.size(); ++j) {
+                if (path == layerName[j]) {
+                    isIn = true;
+                }
+            }
+            if (!isIn) {
+                ofImage img;
+                img.loadImage(dir.getPath(i));
+                layer.push_back(img);
+                layerName.push_back(dir.getPath(i));
+            }  
         }
+        nLayers = nLayersNew;
     }
     
 }
@@ -249,8 +263,12 @@ void testApp::savePicture(){
     file += ".png";
     
     
+    
     tempPic.saveImage(file);
     shotBegin = ofGetElapsedTimeMillis();
+    
+    //play sound
+    sounds.play();
 }
 
 void testApp::updateTemporaryImage(){

@@ -7,10 +7,11 @@ void testApp::setup(){
 
 	// open an outgoing connection to HOST:PORT
 	sender.setup(HOST, PORT);
+    soundSender.setup(SOUNDHOST, PORT);
 
 	//serial reader
-	//serial.setup("COM8", 9600);
-    serial.setup("/dev/tty.usbserial-A600K2BH", 9600);
+	serial.setup("COM4", 9600);
+    //serial.setup("/dev/tty.usbserial-A600K2BH", 9600);
     serial.startContinuesRead();
     ofAddListener(serial.NEW_MESSAGE,this,&testApp::onNewMessage);
 	serial.sendRequest();
@@ -35,6 +36,8 @@ void testApp::setup(){
 	argTypes4.push_back(TYPEINT);
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
+    
+    soundAddress = "sound";
 }
 
 //--------------------------------------------------------------
@@ -92,8 +95,19 @@ void testApp::onNewMessage(string & message)
 			}
             
 			sender.sendMessage(m);
+            
+            testApp::notifySound();
 		}
     }
+}
+
+//--------------------------------------------------------------
+void testApp::notifySound(){
+	
+    ofxOscMessage sm;
+    sm.setAddress(soundAddress);
+    sm.addIntArg(1);
+    soundSender.sendMessage(sm);
 }
 
 //--------------------------------------------------------------
@@ -109,18 +123,34 @@ void testApp::keyPressed(int key){
 	}
 	if(key == 'g' || key == 'G'){
 		string message = "g|1";
-		onNewMessage(message);	
+		onNewMessage(message);
 	}
 	if(key == 'h' || key == 'H'){
 		string message = "h|0";
-		onNewMessage(message);	
+		onNewMessage(message);
 	}
 	if(key == 'i' || key == 'I'){
 		string message = "i|1";
-		onNewMessage(message);	
+		onNewMessage(message);
 	}
     if(key == 'j' || key == 'J'){
 		string message = "j|1";
+		onNewMessage(message);
+	}
+    if(key == 'w' || key == 'W'){
+		string message = "g|1";
+		onNewMessage(message);
+	}
+    if(key == 's' || key == 'S'){
+		string message = "g|0";
+		onNewMessage(message);
+	}
+    if(key == 'e' || key == 'E'){
+		string message = "h|1";
+		onNewMessage(message);
+	}
+    if(key == 'd' || key == 'D'){
+		string message = "h|0";
 		onNewMessage(message);
 	}
 }
