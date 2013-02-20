@@ -123,6 +123,22 @@ void testApp::keyPressed(int key){
 		string message = "j|1";
 		onNewMessage(message);
 	}
+    if(key == 'w' || key == 'W'){
+		string message = "g|1";
+		onNewMessage(message);
+	}
+    if(key == 's' || key == 'S'){
+		string message = "g|0";
+		onNewMessage(message);
+	}
+    if(key == 'e' || key == 'E'){
+		string message = "h|1";
+		onNewMessage(message);
+	}
+    if(key == 'd' || key == 'D'){
+		string message = "h|0";
+		onNewMessage(message);
+	}
 }
 
 //--------------------------------------------------------------
