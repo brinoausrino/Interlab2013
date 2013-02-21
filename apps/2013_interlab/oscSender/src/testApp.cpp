@@ -37,7 +37,7 @@ void testApp::setup(){
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
     
-    soundAddress = "soundsend";
+    soundAddress = "message/send";
 }
 
 //--------------------------------------------------------------
