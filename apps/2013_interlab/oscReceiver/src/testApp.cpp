@@ -6,7 +6,7 @@ void testApp::setup(){
 	cout << "listening for osc messages on port " << PORT << "\n";
 	receiver.setup(PORT);
 
-	soundSender.setup(SOUNDHOST, PORT);
+	soundSender.setup(SOUNDHOST, SOUNDPORT);
 
 	current_msg_string = 0;
 	mouseX = 0;
@@ -29,25 +29,30 @@ void testApp::setup(){
     
     vector<int> argTypes1;
 	argTypes1.push_back(TYPEINT);
-	struct MessageFormat mf1 = {"g", argTypes1};
+	struct MessageFormat mf1 = {"a", argTypes1};
 	messageFormats.push_back(mf1);
     
     vector<int> argTypes2;
 	argTypes2.push_back(TYPEINT);
-	struct MessageFormat mf2 = {"h", argTypes2};
+	struct MessageFormat mf2 = {"b", argTypes2};
 	messageFormats.push_back(mf2);
     
     vector<int> argTypes3;
 	argTypes3.push_back(TYPEINT);
-	struct MessageFormat mf3 = {"i", argTypes3};
+	struct MessageFormat mf3 = {"c", argTypes3};
 	messageFormats.push_back(mf3);
     
     vector<int> argTypes4;
 	argTypes4.push_back(TYPEINT);
-	struct MessageFormat mf4 = {"j", argTypes4};
+	struct MessageFormat mf4 = {"d", argTypes4};
 	messageFormats.push_back(mf4);
+
+	vector<int> argTypes5;
+	argTypes5.push_back(TYPEINT);
+	struct MessageFormat mf5 = {"e", argTypes5};
+	messageFormats.push_back(mf5);
     
-    soundAddress = "message/receive";
+    soundAddress = "/message/receive";
 }
 
 //--------------------------------------------------------------
@@ -67,13 +72,22 @@ void testApp::update(){
 		ofxOscMessage m;
 		receiver.getNextMessage(&m);
         
+		string address = m.getAddress();
+
+		if(address.substr(0,1) == "/"){
+			address.erase(0,1);
+			cout << address << endl;
+		}
+
         for (int i=0; i<messageFormats.size(); ++i) {
-            if(m.getAddress() == messageFormats[i].addressName){
+			if(
+				address == messageFormats[i].addressName
+			){
                 
 				testApp::notifySound();
 
                 //write address
-                serial.writeByte(m.getAddress()[0]);
+                serial.writeByte(address[0]);
                 
                 //get and write arguments
                 for(int j=0; j<messageFormats[i].argTypes.size(); ++j){
@@ -84,19 +98,19 @@ void testApp::update(){
                             
                             serial.writeByte(m.getArgAsString(j)[0]);
                             
-                            cout << "got " << m.getAddress()[0] << " write param " << j << " string " << m.getArgAsString(j)[0] << endl;
+                            cout << "got " << address[0] << " write param " << j << " string " << m.getArgAsString(j)[0] << endl;
                             break;
                         case TYPEINT:
                             
                             serial.writeByte(m.getArgAsInt32(j));
                             
-                            cout << "got " << m.getAddress()[0] << " write param " << j << " int " << m.getArgAsInt32(j) << endl;
+                            cout << "got " << address[0] << " write param " << j << " int " << m.getArgAsInt32(j) << endl;
                             break;
                         case TYPEFLOAT:
                             
                             serial.writeByte(m.getArgAsFloat(j));
                             
-                            cout << "got " << m.getAddress()[0] << " write param " << j << " float " << m.getArgAsFloat(j) << endl;
+                            cout << "got " << address[0] << " write param " << j << " float " << m.getArgAsFloat(j) << endl;
                             break;
                     }
                 }

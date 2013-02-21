@@ -36,8 +36,33 @@ void testApp::setup(){
 	argTypes4.push_back(TYPEINT);
 	struct MessageFormat mf4 = {"j", argTypes4};
 	messageFormats.push_back(mf4);
+
+	vector<int> argTypes5;
+	argTypes5.push_back(TYPEINT);
+	struct MessageFormat mf5 = {"k", argTypes5};
+	messageFormats.push_back(mf5);
     
-    soundAddress = "message/send";
+    vector<int> argTypes6;
+	argTypes6.push_back(TYPEINT);
+	struct MessageFormat mf6 = {"l", argTypes6};
+	messageFormats.push_back(mf6);
+
+	vector<int> argTypes7;
+	argTypes7.push_back(TYPEINT);
+	struct MessageFormat mf7 = {"c", argTypes7};
+	messageFormats.push_back(mf7);
+    
+    vector<int> argTypes8;
+	argTypes8.push_back(TYPEINT);
+	struct MessageFormat mf8 = {"e", argTypes8};
+	messageFormats.push_back(mf8);
+
+	vector<int> argTypes9;
+	argTypes9.push_back(TYPEINT);
+	struct MessageFormat mf9 = {"d", argTypes9};
+	messageFormats.push_back(mf9);
+    
+    soundAddress = "/message/send";
 }
 
 //--------------------------------------------------------------
@@ -138,19 +163,19 @@ void testApp::keyPressed(int key){
 		onNewMessage(message);
 	}
     if(key == 'w' || key == 'W'){
-		string message = "g|1";
+		string message = "c|1";
 		onNewMessage(message);
 	}
     if(key == 's' || key == 'S'){
-		string message = "g|0";
+		string message = "c|0";
 		onNewMessage(message);
 	}
     if(key == 'e' || key == 'E'){
-		string message = "h|1";
+		string message = "d|1";
 		onNewMessage(message);
 	}
     if(key == 'd' || key == 'D'){
-		string message = "h|0";
+		string message = "d|0";
 		onNewMessage(message);
 	}
 }
@@ -162,11 +187,11 @@ void testApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void testApp::mouseMoved(int x, int y){
-	ofxOscMessage m;
-	m.setAddress("/mouse/position");
-	m.addIntArg(x);
-	m.addIntArg(y);
-	sender.sendMessage(m);
+	//ofxOscMessage m;
+	//m.setAddress("/mouse/position");
+	//m.addIntArg(x);
+	//m.addIntArg(y);
+	//sender.sendMessage(m);
 }
 
 //--------------------------------------------------------------
