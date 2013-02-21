@@ -34,9 +34,9 @@ void testApp::update(){
         
         
 		
-		if(m.getAddress() == "message/receive"){
+		if(m.getAddress() == "/message/receive"){
 			
-            cout << "message/receive" << endl;
+            cout << "/message/receive" << endl;
             
             if(!synth.getIsPlaying()){
                 
@@ -47,9 +47,9 @@ void testApp::update(){
             }
             
 		}
-		else if(m.getAddress() == "message/send"){
+		else if(m.getAddress() == "/message/send"){
 			
-            cout << "message/send" << endl;
+            cout << "/message/send" << endl;
             
             if(!synth.getIsPlaying()){
                 

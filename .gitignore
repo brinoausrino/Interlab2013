@@ -62,3 +62,8 @@ apps/2013_interlab/oscSoundReceiver/build
 apps/2013_interlab/oscSoundReceiver/obj
 apps/2013_interlab/oscSoundReceiver/bin/*
 !apps/2013_interlab/oscSoundReceiver/bin/data
+
+apps/2013_interlab/Birdcage/build
+apps/2013_interlab/Birdcage/obj
+apps/2013_interlab/Birdcage/bin/*
+!apps/2013_interlab/Birdcage/bin/data
