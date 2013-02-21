@@ -8,6 +8,7 @@
 #define PORT 7000
 
 #define SOUNDHOST "192.168.2.48"
+#define SOUNDPORT 12345
 
 
 
