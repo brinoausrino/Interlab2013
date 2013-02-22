@@ -10,6 +10,9 @@
 #define SOUNDHOST "192.168.0.107"
 #define SOUNDPORT 12345
 
+#define BIRDCAGEHOST "192.168.0.110"
+#define BIRDCAGEPORT 12345
+
 class testApp : public ofBaseApp {
 	public:
 
@@ -43,6 +46,9 @@ class testApp : public ofBaseApp {
     
         ofxOscSender soundSender;
         string soundAddress;
+    
+        ofxOscSender birdcageSender;
+        
     
         struct MessageFormat {
             string addressName;

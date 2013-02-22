@@ -7,7 +7,9 @@ void testApp::setup(){
 	receiver.setup(PORT);
 
 	soundSender.setup(SOUNDHOST, SOUNDPORT);
-
+    
+    birdcageSender.setup(BIRDCAGEHOST, BIRDCAGEPORT);
+    
 	current_msg_string = 0;
 	mouseX = 0;
 	mouseY = 0;
@@ -87,33 +89,43 @@ void testApp::update(){
 			){
                 
 				testApp::notifySound();
-
-                //write address
-                serial.writeByte(address[0]);
                 
-                //get and write arguments
-                for(int j=0; j<messageFormats[i].argTypes.size(); ++j){
-                    int type = messageFormats[i].argTypes[j];
+                
+                if(address[0] == 'b'){
                     
-                    switch(type){
-                        case TYPESTRING:
+                    ofxOscMessage m;
+                    m.setAddress("b");
+                    m.addIntArg(m.getArgAsInt32(0));
+                    birdcageSender.sendMessage(m);
+                }
+                else{
+                    //write address
+                    serial.writeByte(address[0]);
+                
+                    //get and write arguments
+                    for(int j=0; j<messageFormats[i].argTypes.size(); ++j){
+                        int type = messageFormats[i].argTypes[j];
+                    
+                        switch(type){
+                            case TYPESTRING:
                             
-                            serial.writeByte(m.getArgAsString(j)[0]);
+                                serial.writeByte(m.getArgAsString(j)[0]);
                             
-                            cout << "got " << address[0] << " write param " << j << " string " << m.getArgAsString(j)[0] << endl;
-                            break;
-                        case TYPEINT:
+                                cout << "got " << address[0] << " write param " << j << " string " << m.getArgAsString(j)[0] << endl;
+                                break;
+                            case TYPEINT:
                             
-                            serial.writeByte(m.getArgAsInt32(j));
+                                serial.writeByte(m.getArgAsInt32(j));
                             
-                            cout << "got " << address[0] << " write param " << j << " int " << m.getArgAsInt32(j) << endl;
-                            break;
-                        case TYPEFLOAT:
+                                cout << "got " << address[0] << " write param " << j << " int " << m.getArgAsInt32(j) << endl;
+                                break;
+                            case TYPEFLOAT:
                             
-                            serial.writeByte(m.getArgAsFloat(j));
+                                serial.writeByte(m.getArgAsFloat(j));
                             
-                            cout << "got " << address[0] << " write param " << j << " float " << m.getArgAsFloat(j) << endl;
-                            break;
+                                cout << "got " << address[0] << " write param " << j << " float " << m.getArgAsFloat(j) << endl;
+                                break;
+                        }
                     }
                 }
             }
