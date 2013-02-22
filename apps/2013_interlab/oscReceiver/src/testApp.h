@@ -4,10 +4,11 @@
 #include "ofxOsc.h"
 
 // listen on port 12345
-#define PORT 12345
+#define PORT 7000
 #define NUM_MSG_STRINGS 20
 
-#define SOUNDHOST "192.168.2.48"
+#define SOUNDHOST "192.168.0.107"
+#define SOUNDPORT 12345
 
 class testApp : public ofBaseApp {
 	public:

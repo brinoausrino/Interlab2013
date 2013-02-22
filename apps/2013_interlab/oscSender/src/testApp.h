@@ -5,9 +5,10 @@
 #include "ofxSimpleSerial.h"
 
 #define HOST "localhost"
-#define PORT 12345
+#define PORT 7000
 
-#define SOUNDHOST "192.168.2.48"
+#define SOUNDHOST "192.168.0.107"
+#define SOUNDPORT 12345
 
 
 
