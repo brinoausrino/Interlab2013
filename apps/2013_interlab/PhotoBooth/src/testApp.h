@@ -7,6 +7,7 @@
 #include "ofxFaceTrackerThreaded.h"
 #include "ofxXmlSettings.h"
 #include "ofSoundPlayer.h"
+#include "ofxSimpleSerial.h"
 
 enum BOOTH_SATE {
 	WELCOME = 0,
@@ -29,6 +30,8 @@ public:
 	void keyPressed(int key);
 	void mousePressed(int x, int y, int button);
 	
+	string getState();
+	
 	void shuffleFace();
 	void printPicture();
 	void saveNewFace();
@@ -37,6 +40,8 @@ public:
 	
 	void resetTimeout();
 	void timeout();
+	
+	void onNewMessage(string & message);
 
 	ofxFaceTrackerThreaded camTracker;
 	ofVideoGrabber cam;
@@ -80,4 +85,15 @@ public:
     int timeZone;
 	
 	ofSoundPlayer sounds;
+	ofImage arabic;
+	
+    //serial
+    bool                    useSerial;
+    bool                    isPressed;
+    string                  serialDevice;
+    int                     baudRate;
+    string                  serialMessage;
+    ofxSimpleSerial         _serial;
+    float                   readTime;	
+    int                     shotTime, shotBegin;
 };
