@@ -95,8 +95,10 @@ void testApp::update(){
                     
                     ofxOscMessage m;
                     m.setAddress("b");
-                    m.addIntArg(m.getArgAsInt32(0));
+                    m.addIntArg(0);
                     birdcageSender.sendMessage(m);
+
+					cout << "send birdcage " << endl;
                 }
                 else{
                     //write address
