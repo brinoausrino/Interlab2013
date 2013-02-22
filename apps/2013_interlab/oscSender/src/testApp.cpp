@@ -178,6 +178,14 @@ void testApp::keyPressed(int key){
 		string message = "d|0";
 		onNewMessage(message);
 	}
+	if(key == 'r' || key == 'R'){
+		string message = "l|1";
+		onNewMessage(message);
+	}
+    if(key == 'f' || key == 'F'){
+		string message = "l|0";
+		onNewMessage(message);
+	}
 }
 
 //--------------------------------------------------------------

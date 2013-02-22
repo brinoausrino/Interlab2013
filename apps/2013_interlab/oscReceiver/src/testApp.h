@@ -4,7 +4,7 @@
 #include "ofxOsc.h"
 
 // listen on port 12345
-#define PORT 7000
+#define PORT 12345
 #define NUM_MSG_STRINGS 20
 
 #define SOUNDHOST "192.168.0.107"
