@@ -6,6 +6,8 @@
 
 #define HOST "localhost"
 #define PORT 7000
+//#define HOST "82.201.234.37"
+//#define PORT 12345
 
 #define SOUNDHOST "192.168.0.107"
 #define SOUNDPORT 12345
