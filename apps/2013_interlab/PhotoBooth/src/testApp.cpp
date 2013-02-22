@@ -35,6 +35,8 @@ void testApp::setup() {
 	
 	//camera capture sound, for fun
 	sounds.loadSound("sounds/camera_snap.wav");
+	focus.loadSound("sounds/camera_focus.mp3");
+	
 	arabic.loadImage("fonts/arabic2.png");
 	
 	//get city and directory settings
@@ -136,11 +138,10 @@ void testApp::setup() {
 void testApp::update() {
 	cam.update();
 	
-
 	//printf("time is %f \n", ofGetElapsedTimef() - _time);
 	//printf("time float is %f\n", ofGetElapsedTimef());
 	
-	if(wait > 100)
+	if(wait > 50)
 	{
 		wait = 0;
 	}
@@ -187,35 +188,28 @@ void testApp::draw() {
 	if(src.getWidth() > 0 && cloneReady) {
 		clone.draw(0, 0);
 	} else {
-		cam.draw(0, 0); //, ofGetWindowWidth(),ofGetWindowHeight());
+		cam.draw(0, 0); 
 	}
 	
 	string debugMessage;
 	if(!camTracker.getFound()) {
 		if(DEBUG) drawHighlightString("camera face not found", 10, 10);
-		//debugMessage += "Can't detect face for face-mapping\n";
 		
 		if( currentState == IN_USE ) 
 			resetTimeout();
 	}
 	if(src.getWidth() == 0) {
 		if(DEBUG) drawHighlightString("drag an image here", 10, 30);
-		//debugMessage = "Can't detect face for face-mapping";
 	} else if(!srcTracker.getFound()) {
 		if(DEBUG) drawHighlightString("image face not found", 10, 30);
-		//debugMessage  += "Can't find source image to load\n";
 	}
 	
 	if(imageCaptured) {
-		//if(wait==100) imageCaptured = false;
-		//if(DEBUG) drawHighlightString("Took a picture of you to send", 10, 60);
 		debugMessage = "Took a stealth picture of you to send to ";
 		debugMessage += (city == "cairo")? "Dresden\n" : "Cairo\n";
 	}
 	
 	if(videoCaptured) {
-		//if(wait==100) videoCaptured = false;
-		//if(DEBUG) drawHighlightString("Took a picture of your NEW face", 10, 60);
 		debugMessage = "Yay! Printed your photo...\n";
 	}
 	
@@ -223,7 +217,8 @@ void testApp::draw() {
 	
 	if(currentState == WELCOME)
 	{
-		if(wait==100 && camTracker.getFound()) { 
+		if(wait==50 && camTracker.getFound()) { 
+			focus.play();
 			saveNewFace();
 			currentState = SAVE_FACE; 
 		}
@@ -231,7 +226,7 @@ void testApp::draw() {
 	}
 	if(currentState == SAVE_FACE)
 	{
-		if(wait == 50)
+		if(wait == 20)
 			currentState = IN_USE;
 		else 
 			showWelcomeScreen();
@@ -341,19 +336,18 @@ void testApp::printPicture()
 	imagePath += getTimeStamp();
 	imagePath += "_";
     imagePath += city;
-	//imagePath += ofToString(printed.numFiles()); 
 	imagePath += ".jpg";
 	
 	printf("PRINT PICTURE! %s", imagePath.c_str());
 	
 	//play sound
 	sounds.play();
+	
 	//save picture
 	ofSaveScreen(imagePath);
 	videoCaptured = true;
 	wait = 0;
 	
-	//TODO TEST
 	//print picture
 	string command = "lp -d " + printerName + " " + ofFilePath::getAbsolutePath(imagePath);
 	printf(command.c_str());
@@ -367,15 +361,12 @@ void testApp::saveNewFace()
 {
 	if(camTracker.getFound())
 	{		
-		//string capturePath = captured.getAbsolutePath() + ofToString(captured.numFiles()) + ".jpg";
-		
 		string capturePath = captured.getAbsolutePath();
 		capturePath += "/";
 		capturePath += getTimeStamp();
-		//capturePath += ofToString(captured.numFiles()); 
 		capturePath += ".jpg";
 		
-		printf("SAVE FACE for other city! %s", capturePath.c_str());	
+		printf("SAVE FACE for other city! %s\n", capturePath.c_str());	
 		
 		ofSaveImage(cam.getPixelsRef(), capturePath); //, ofImageQualityType qualityLevel=OF_IMAGE_QUALITY_BEST)
 		imageCaptured = true;

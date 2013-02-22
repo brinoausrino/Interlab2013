@@ -85,6 +85,8 @@ public:
     int timeZone;
 	
 	ofSoundPlayer sounds;
+	ofSoundPlayer focus;
+	
 	ofImage arabic;
 	
     //serial
