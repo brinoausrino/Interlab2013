@@ -7,6 +7,13 @@
 #include "ofxFaceTrackerThreaded.h"
 #include "ofxXmlSettings.h"
 #include "ofSoundPlayer.h"
+
+enum BOOTH_SATE {
+	WELCOME = 0,
+	SAVE_FACE,	
+	IN_USE,
+	GOODBYE
+};
  
 class testApp : public ofBaseApp {
 public:
@@ -16,6 +23,9 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void loadFace(string face);
 	
+	void showWelcomeScreen();
+	void showGoodbyeScreen();
+	
 	void keyPressed(int key);
 	void mousePressed(int x, int y, int button);
 	
@@ -24,7 +34,9 @@ public:
 	void saveNewFace();
 	void errorMessage();
 	string getTimeStamp();
-
+	
+	void resetTimeout();
+	void timeout();
 
 	ofxFaceTrackerThreaded camTracker;
 	ofVideoGrabber cam;
@@ -51,6 +63,16 @@ public:
 	bool videoCaptured;
 	bool imageCaptured;
 	int wait;
+	
+	bool countTimeout;
+	
+	float _time;
+	
+	BOOTH_SATE currentState;
+	
+	ofTrueTypeFont	englishInstructions;
+	ofTrueTypeFont	arabicInstructions;
+
 	
 	string  destinationFolder;
 	string city;
