@@ -192,31 +192,31 @@ void testApp::draw() {
 	
 	string debugMessage;
 	if(!camTracker.getFound()) {
-		//if(DEBUG) drawHighlightString("camera face not found", 10, 10);
-		debugMessage = "Can't detect face for face-mapping";
+		if(DEBUG) drawHighlightString("camera face not found", 10, 10);
+		//debugMessage += "Can't detect face for face-mapping\n";
 		
 		if( currentState == IN_USE ) 
-			resetTimeout(); //currentState = WELCOME;
+			resetTimeout();
 	}
 	if(src.getWidth() == 0) {
-		//if(DEBUG) drawHighlightString("drag an image here", 10, 30);
+		if(DEBUG) drawHighlightString("drag an image here", 10, 30);
 		//debugMessage = "Can't detect face for face-mapping";
 	} else if(!srcTracker.getFound()) {
-		//if(DEBUG) drawHighlightString("image face not found", 10, 30);
-		debugMessage = "Can't find source image to load";
+		if(DEBUG) drawHighlightString("image face not found", 10, 30);
+		//debugMessage  += "Can't find source image to load\n";
 	}
 	
 	if(imageCaptured) {
 		//if(wait==100) imageCaptured = false;
 		//if(DEBUG) drawHighlightString("Took a picture of you to send", 10, 60);
 		debugMessage = "Took a stealth picture of you to send to ";
-		debugMessage += (city == "cairo")? "Dresden" : "Cairo";
+		debugMessage += (city == "cairo")? "Dresden\n" : "Cairo\n";
 	}
 	
 	if(videoCaptured) {
 		//if(wait==100) videoCaptured = false;
 		//if(DEBUG) drawHighlightString("Took a picture of your NEW face", 10, 60);
-		debugMessage = "Yay! Printed your photo...";
+		debugMessage = "Yay! Printed your photo...\n";
 	}
 	
 	//printf("Current sate is %d", currentState);
