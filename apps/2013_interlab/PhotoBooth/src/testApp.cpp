@@ -35,6 +35,7 @@ void testApp::setup() {
 	
 	//camera capture sound, for fun
 	sounds.loadSound("sounds/camera_snap.wav");
+	arabic.loadImage("fonts/arabic2.png");
 	
 	//get city and directory settings
 	ofxXmlSettings XML;
@@ -47,16 +48,27 @@ void testApp::setup() {
     destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "") + "Interlab/PhotoBooth/";
     city = ofToLower( XML.getValue("FILES:CITY", "") );
 	string debugSetting = ofToLower( XML.getValue("FILES:DEBUG", "FALSE") );
+	
 	DEBUG = (debugSetting == "true" )? TRUE : FALSE;
 	
-	/* timeZone = XML.getValue("FILES:TIMEZONE", 0);*/
+    useSerial = false;
+    string useSerialTemp = XML.getValue("FILES:USE_SERIAL","false");
+    if (useSerialTemp == "true") {
+        useSerial = true;
+    }
+    serialMessage = XML.getValue("FILES:SERIAL_MESSAGE","0");
+    serialDevice = XML.getValue("FILES:SERIAL_DEVICE","com0");
+    baudRate = XML.getValue("FILES:BAUD_RATE",9600);
+	
+	timeZone = XML.getValue("FILES:TIMEZONE", 0);
 	printerName = XML.getValue("IMAGE_PROCESSING:PRINTER", "");
 	
 	//DEBUG
 	printf("PRINTER is %s", printerName.c_str());	
 	printf("Current City: %s", city.c_str());
 	
-	englishInstructions.loadFont("fonts/helvetica_med.ttf", 50, true, true);
+	
+	englishInstructions.loadFont("fonts/helvetica_med.ttf", 30, true, true);
 	englishInstructions.setLineHeight(65.0f);
 	englishInstructions.setLetterSpacing(1.035);
 	
@@ -96,6 +108,7 @@ void testApp::setup() {
 	//directory of mapped-face that selected to print/save
 	printed.listDir("PrintedPhotos");
 	
+	
 	wait = 0;
 	currentFace = 0;
 	imageSequence = 0;
@@ -103,6 +116,15 @@ void testApp::setup() {
 	
 	//debug
 	printf("# of files %d",faces.numFiles());
+	
+	//serial setup
+    if (useSerial) {
+        isPressed = false;
+        _serial.setup(serialDevice, baudRate);
+        _serial.startContinuesRead();
+        ofAddListener(_serial.NEW_MESSAGE,this,&testApp::onNewMessage);
+        _serial.sendRequest();
+    }
 	
 	//load latest face from other city
 	if(faces.size()!=0){
@@ -168,26 +190,33 @@ void testApp::draw() {
 		cam.draw(0, 0); //, ofGetWindowWidth(),ofGetWindowHeight());
 	}
 	
+	string debugMessage;
 	if(!camTracker.getFound()) {
-		if(DEBUG) drawHighlightString("camera face not found", 10, 10);
+		//if(DEBUG) drawHighlightString("camera face not found", 10, 10);
+		debugMessage = "Can't detect face for face-mapping";
 		
 		if( currentState == IN_USE ) 
 			resetTimeout(); //currentState = WELCOME;
 	}
 	if(src.getWidth() == 0) {
-		if(DEBUG) drawHighlightString("drag an image here", 10, 30);
+		//if(DEBUG) drawHighlightString("drag an image here", 10, 30);
+		//debugMessage = "Can't detect face for face-mapping";
 	} else if(!srcTracker.getFound()) {
-		if(DEBUG) drawHighlightString("image face not found", 10, 30);
+		//if(DEBUG) drawHighlightString("image face not found", 10, 30);
+		debugMessage = "Can't find source image to load";
 	}
 	
 	if(imageCaptured) {
-		if(wait==100) imageCaptured = false;
-		if(DEBUG) drawHighlightString("Took a picture of you to send", 10, 60);
+		//if(wait==100) imageCaptured = false;
+		//if(DEBUG) drawHighlightString("Took a picture of you to send", 10, 60);
+		debugMessage = "Took a stealth picture of you to send to ";
+		debugMessage += (city == "cairo")? "Dresden" : "Cairo";
 	}
 	
 	if(videoCaptured) {
-		if(wait==100) videoCaptured = false;
-		if(DEBUG) drawHighlightString("Took a picture of your NEW face", 10, 60);
+		//if(wait==100) videoCaptured = false;
+		//if(DEBUG) drawHighlightString("Took a picture of your NEW face", 10, 60);
+		debugMessage = "Yay! Printed your photo...";
 	}
 	
 	//printf("Current sate is %d", currentState);
@@ -195,7 +224,6 @@ void testApp::draw() {
 	if(currentState == WELCOME)
 	{
 		if(wait==100 && camTracker.getFound()) { 
-			printf("stop welcome screen");
 			saveNewFace();
 			currentState = SAVE_FACE; 
 		}
@@ -214,6 +242,53 @@ void testApp::draw() {
 		resetTimeout();
 	}
 	
+	//draw gui
+    if (DEBUG)
+    {
+        string t = "Current State: ";
+        t+= getState();
+        t+=("\n");
+		t+= "Debug Message: ";
+		t+= debugMessage;
+		t+=("\n");
+        t+= "seconds: ";
+		t+= ofToString(ofGetElapsedTimef() - _time);
+		t+=("\n");
+        if (useSerial) {
+            t+= "useSerial: true";
+        }
+        else  
+            t+= "useSerial: false";
+        t+=("\n");
+        t+= "serial Device: ";
+        t+= serialDevice;
+        t+=("\n");
+        t+= "baudRate: ";
+        t+= ofToString(baudRate);
+        t+=("\n");
+        t+= "serialMessage: ";
+        t+= serialMessage;
+        ofSetColor(0, 0, 0);
+        ofRect(0, ofGetWindowHeight() - 160, 700, 160);
+        ofSetColor(255, 255, 255);
+        ofDrawBitmapString(t, 20, ofGetWindowHeight() - 145);
+    }
+	
+	
+}
+
+string testApp::getState()
+{
+	switch (currentState) {
+		case WELCOME:
+			return "Welcome";
+		case SAVE_FACE:
+			return "Saved Face Capture";
+		case IN_USE:
+			return "Using Photobooth";
+		case GOODBYE:
+			return "Goodbye. Waiting for Reset";
+	}
 }
 
 void testApp::loadFace(string face){
@@ -259,6 +334,8 @@ string testApp::getTimeStamp()
 //TODO: a5 printing (half the size)
 void testApp::printPicture()
 {
+	if( currentState != IN_USE ) return;
+	
 	string imagePath = printed.getAbsolutePath();
 	imagePath += "/";
 	imagePath += getTimeStamp();
@@ -310,6 +387,8 @@ void testApp::saveNewFace()
 //TODO: Change this to a random shuffle
 void testApp::shuffleFace()
 {
+	if( currentState != IN_USE ) return;
+	
 	currentFace--;
 	
 	//currentFace = ofClamp(currentFace,0,faces.size()-1);
@@ -353,6 +432,9 @@ void testApp::keyPressed(int key){
 		case 'x':
 			currentState = GOODBYE;
 			break;
+		case 'd':
+			DEBUG = !DEBUG;
+			break;
 	}
 	
 }
@@ -367,7 +449,7 @@ void testApp::showWelcomeScreen()
 	// alpha is usually turned off - for speed puposes.  let's turn it on!
 	ofEnableAlphaBlending();
 	
-	string introEng = (currentState == WELCOME) ? "WELCOME TO THE PHOTOBOOTH":"GREAT!"; 
+	/*string introEng = (currentState == WELCOME) ? "WELCOME TO THE PHOTOBOOTH":"GREAT!"; 
 	string introEng2 = (currentState == WELCOME)? "PLEASE SIT AND FACE THE CAMERA": "LETS GET STARTED!"; 
 	string introEng3 = "WHILE WE SCAN YOUR FACE";
 	
@@ -382,7 +464,7 @@ void testApp::showWelcomeScreen()
 	else {
 		englishInstructions.drawString(introEng, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng))/2, 300);
 		englishInstructions.drawString(introEng2, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng2))/2, 400);
-	}
+	}*/
 
 
 	
@@ -404,16 +486,18 @@ void testApp::showGoodbyeScreen()
 	ofRect(0,0,ofGetWindowWidth(), ofGetWindowHeight());	
 	ofEnableAlphaBlending();
 	
-	string goodbye1 = "YOUR PHOTO IS PRINTING!"; 
-	string goodbye2 = "GRAB IT OUTSIDE THE BOOTH!"; 
-	string goodbye3 = "THANK YOU!"; 
+	string goodbye1 = "THANK YOU!"; 
+	string goodbye2 = "YOUR PHOTO IS PRINTING!"; 
+	string goodbye3 = "GRAB IT OUTSIDE THE BOOTH!"; 
+	
 	
 	ofSetColor(225);
 	
-	englishInstructions.drawString(goodbye1, (ofGetWindowWidth()- englishInstructions.stringWidth(goodbye1))/2, 200);
-	englishInstructions.drawString(goodbye2, (ofGetWindowWidth()- englishInstructions.stringWidth(goodbye2))/2, 300);
-	englishInstructions.drawString(goodbye3, (ofGetWindowWidth()- englishInstructions.stringWidth(goodbye3))/2, 500);
+	englishInstructions.drawString(goodbye1, (ofGetWindowWidth()- englishInstructions.stringWidth(goodbye1))/2, 100);
+	englishInstructions.drawString(goodbye2, (ofGetWindowWidth()- englishInstructions.stringWidth(goodbye2))/2, 200);
+	englishInstructions.drawString(goodbye3, (ofGetWindowWidth()- englishInstructions.stringWidth(goodbye3))/2, 300);
 	
+	if(city == "cairo") arabic.draw(0, 0);
 }
 
 
@@ -431,5 +515,17 @@ void testApp::mousePressed(int x, int y, int button){
 			printPicture();
 			break;
 	}
-    
+}
+
+void testApp::onNewMessage(string & message)
+{
+	if(DEBUG) printf("serial message is %s\n", message.c_str());
+	
+    if (message == serialMessage && !isPressed) {
+        isPressed = true;
+    }
+    else if(message != serialMessage && isPressed)
+    {
+        isPressed = false;
+    }
 }
