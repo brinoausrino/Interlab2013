@@ -46,6 +46,9 @@ void testApp::setup() {
     
     destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "") + "Interlab/PhotoBooth/";
     city = ofToLower( XML.getValue("FILES:CITY", "") );
+	string debugSetting = ofToLower( XML.getValue("FILES:DEBUG", "FALSE") );
+	DEBUG = (debugSetting == "true" )? TRUE : FALSE;
+	
 	/* timeZone = XML.getValue("FILES:TIMEZONE", 0);*/
 	printerName = XML.getValue("IMAGE_PROCESSING:PRINTER", "");
 	
@@ -112,7 +115,7 @@ void testApp::update() {
 	cam.update();
 	
 
-	printf("time is %f \n", ofGetElapsedTimef() - _time);
+	//printf("time is %f \n", ofGetElapsedTimef() - _time);
 	//printf("time float is %f\n", ofGetElapsedTimef());
 	
 	if(wait > 100)
@@ -124,7 +127,7 @@ void testApp::update() {
 	if(countTimeout) 
 	{
 		int currTime = ofGetElapsedTimef() - _time;
-		printf("currTime is %d\n", currTime);
+		//printf("currTime is %d\n", currTime);
 		if(currTime > 20)
 			timeout();
 	}
@@ -187,7 +190,7 @@ void testApp::draw() {
 		if(DEBUG) drawHighlightString("Took a picture of your NEW face", 10, 60);
 	}
 	
-	printf("Current sate is %d", currentState);
+	//printf("Current sate is %d", currentState);
 	
 	if(currentState == WELCOME)
 	{
@@ -242,11 +245,12 @@ string testApp::getTimeStamp()
 {
 	string timestamp = ofGetTimestampString();
     string t2 = timestamp.substr(11,2);
-    int ttemp = ofToInt(t2);
-    ttemp+=timeZone;
-    t2 = ofToString(ttemp);
-    timestamp[11] = t2[0];
-    timestamp[12] = t2[1];
+//	printf("timesteamp %s : t2 %s\n", timestamp.c_str(), t2.c_str());
+//    int ttemp = ofToInt(t2);
+//    ttemp+=timeZone;
+//    t2 = ofToString(ttemp);
+//    timestamp[11] = t2[0];
+//    timestamp[12] = t2[1];
 	
 	return timestamp;
 }
@@ -314,6 +318,7 @@ void testApp::shuffleFace()
 		if(currentFace == -1 ) currentFace = faces.size()-1;
 		else if(currentFace == faces.size()) currentFace =0;
 		
+		printf("shuffle face %d/%d\n", currentFace, faces.size());
 		loadFace(faces.getPath(currentFace));
 	}
 }
