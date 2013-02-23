@@ -8,6 +8,7 @@ void testApp::setup(){
 	// open an outgoing connection to HOST:PORT
 	sender.setup(HOST, PORT);
     soundSender.setup(SOUNDHOST, SOUNDPORT);
+	localSender.setup(LOCALHOST, LOCALPORT);
 
 	//serial reader
 	serial.setup("COM4", 9600);
@@ -122,6 +123,27 @@ void testApp::onNewMessage(string & message)
 			sender.sendMessage(m);
             
             testApp::notifySound();
+
+			//also send to local receiver
+			string locaAddress;
+			if(addressName == "g"){
+				locaAddress = "a";
+			}
+			else if(addressName == "h"){
+				locaAddress = "b";
+			}
+			else if(addressName == "i"){
+				locaAddress = "c";
+			}
+			else if(addressName == "j"){
+				locaAddress = "e";
+			}
+			else if(addressName == "l"){
+				locaAddress = "d";
+			}
+			m.setAddress(locaAddress);
+			localSender.sendMessage(m);
+			
 		}
     }
 }
@@ -176,6 +198,14 @@ void testApp::keyPressed(int key){
 	}
     if(key == 'd' || key == 'D'){
 		string message = "d|0";
+		onNewMessage(message);
+	}
+	if(key == 'r' || key == 'R'){
+		string message = "l|1";
+		onNewMessage(message);
+	}
+    if(key == 'f' || key == 'F'){
+		string message = "l|0";
 		onNewMessage(message);
 	}
 }

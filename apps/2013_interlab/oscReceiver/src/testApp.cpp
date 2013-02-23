@@ -78,9 +78,10 @@ void testApp::update(){
         
 		string address = m.getAddress();
 
+		cout << address << endl;
+
 		if(address.substr(0,1) == "/"){
 			address.erase(0,1);
-			cout << address << endl;
 		}
 
         for (int i=0; i<messageFormats.size(); ++i) {
@@ -95,8 +96,10 @@ void testApp::update(){
                     
                     ofxOscMessage m;
                     m.setAddress("b");
-                    m.addIntArg(m.getArgAsInt32(0));
+                    m.addIntArg(0);
                     birdcageSender.sendMessage(m);
+
+					cout << "send birdcage " << endl;
                 }
                 else{
                     //write address
