@@ -38,6 +38,8 @@ void testApp::setup() {
 	focus.loadSound("sounds/camera_focus.mp3");
 	
 	arabic.loadImage("fonts/arabic2.png");
+	arabic2.loadImage("fonts/arabic3.png");
+	arabic3.loadImage("fonts/arabic4.png");
 	
 	//get city and directory settings
 	ofxXmlSettings XML;
@@ -50,6 +52,9 @@ void testApp::setup() {
     destinationFolder = XML.getValue("FILES:PICTURE_FOLDER", "") + "Interlab/PhotoBooth/";
     city = ofToLower( XML.getValue("FILES:CITY", "") );
 	string debugSetting = ofToLower( XML.getValue("FILES:DEBUG", "FALSE") );
+	string showInstructions = ofToLower( XML.getValue("FILES:INSTRUCTIONS", "ON") );
+	
+	instructionsON = (showInstructions == "on" )? TRUE : FALSE; 
 	
 	DEBUG = (debugSetting == "true" )? TRUE : FALSE;
 	
@@ -149,6 +154,9 @@ void testApp::update() {
 	
 	if(countTimeout) 
 	{
+		if( currentState == IN_USE && camTracker.getFound() )
+		   countTimeout = false;
+		
 		int currTime = ofGetElapsedTimef() - _time;
 		//printf("currTime is %d\n", currTime);
 		if(currTime > 20)
@@ -405,7 +413,7 @@ void testApp::keyPressed(int key){
 			shuffleFace();
 			break;
 		case 's' :
-			saveNewFace();
+			printPicture();
 			break;
 		case 'p':
 			printPicture();
@@ -414,6 +422,9 @@ void testApp::keyPressed(int key){
 			//not fully working yet! some bugs
             ofToggleFullscreen();
             break;
+		case ' ':
+			printPicture();
+			break;
 		case 'w':
 			currentState = WELCOME;
 			break;
@@ -440,22 +451,27 @@ void testApp::showWelcomeScreen()
 	// alpha is usually turned off - for speed puposes.  let's turn it on!
 	ofEnableAlphaBlending();
 	
-	/*string introEng = (currentState == WELCOME) ? "WELCOME TO THE PHOTOBOOTH":"GREAT!"; 
-	string introEng2 = (currentState == WELCOME)? "PLEASE SIT AND FACE THE CAMERA": "LETS GET STARTED!"; 
-	string introEng3 = "WHILE WE SCAN YOUR FACE";
-	
-	ofSetColor(225);
-	
-	if( currentState == WELCOME)
+	if(instructionsON)
 	{
-		englishInstructions.drawString(introEng, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng))/2, 200);
-		englishInstructions.drawString(introEng2, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng2))/2, 400);
-		englishInstructions.drawString(introEng3, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng3))/2, 500);
+		string introEng = (currentState == WELCOME) ? "WELCOME":"GREAT!"; 
+		string introEng2 = (currentState == WELCOME)? "PLEASE LOOK AT THE CAMERA": "LETS GET STARTED!"; 
+		string introEng3 = "WHILE WE SCAN YOUR FACE";
+		
+		ofSetColor(225);
+		
+		if( currentState == WELCOME)
+		{
+			englishInstructions.drawString(introEng, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng))/2, 100);
+			englishInstructions.drawString(introEng2, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng2))/2, 200);
+			englishInstructions.drawString(introEng3, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng3))/2, 300);
+			if(city == "cairo") arabic2.draw(0, 0);
+		}
+		else {
+			englishInstructions.drawString(introEng, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng))/2, 200);
+			englishInstructions.drawString(introEng2, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng2))/2, 300);
+			if(city == "cairo") arabic3.draw(0, 0);
+		}
 	}
-	else {
-		englishInstructions.drawString(introEng, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng))/2, 300);
-		englishInstructions.drawString(introEng2, (ofGetWindowWidth()- englishInstructions.stringWidth(introEng2))/2, 400);
-	}*/
 
 
 	
@@ -495,17 +511,17 @@ void testApp::showGoodbyeScreen()
 void testApp::mousePressed(int x, int y, int button){
 	
 	printf("button pressed: %d", button);
-	
+	shuffleFace();
 	//0: Mouse Button 1, shuffle pictures
 	//1: Mouse Button 2, print picture
-	switch(button){
+	/*switch(button){
 		case 0: 
-			shuffleFace();
+			
 			break;
 		case 1:
 			printPicture();
 			break;
-	}
+	}*/
 }
 
 void testApp::onNewMessage(string & message)

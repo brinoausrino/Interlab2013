@@ -88,6 +88,10 @@ public:
 	ofSoundPlayer focus;
 	
 	ofImage arabic;
+	ofImage arabic2;
+	ofImage arabic3;
+	
+	bool instructionsON;
 	
     //serial
     bool                    useSerial;
