@@ -78,9 +78,10 @@ void testApp::update(){
         
 		string address = m.getAddress();
 
+		cout << address << endl;
+
 		if(address.substr(0,1) == "/"){
 			address.erase(0,1);
-			cout << address << endl;
 		}
 
         for (int i=0; i<messageFormats.size(); ++i) {

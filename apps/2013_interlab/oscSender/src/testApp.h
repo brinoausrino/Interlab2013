@@ -9,6 +9,9 @@
 //#define HOST "82.201.234.37"
 //#define PORT 12345
 
+#define LOCALHOST "localhost"
+#define LOCALPORT 12346
+
 #define SOUNDHOST "192.168.0.107"
 #define SOUNDPORT 12345
 
@@ -40,10 +43,12 @@ class testApp : public ofBaseApp {
 		ofTrueTypeFont font;
 		ofxOscSender sender;
 		ofxSimpleSerial serial;
-    
+		
         ofxOscSender soundSender;
         string soundAddress;
-    
+		
+		ofxOscSender localSender;
+
 		struct MessageFormat {
 			string addressName;
 			vector<int> argTypes;
